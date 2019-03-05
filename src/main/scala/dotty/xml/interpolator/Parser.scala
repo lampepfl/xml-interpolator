@@ -52,7 +52,7 @@ class Parser extends JavaTokenParsers with TokenTests {
   )  
   def ScalaExpr = Placeholder
 
-  def CharData: Parser[Tree.Node] = positioned(Char1.* ^^ { case chars => Tree.Text(chars.mkString) })
+  def CharData: Parser[Tree.Node] = positioned(Char1.+ ^^ { case chars => Tree.Text(chars.mkString) })
 
   def Char  = not(Placeholder) ~> ".".r
   def Char1 = not("<" | "&") ~> Char
@@ -81,14 +81,6 @@ class Parser extends JavaTokenParsers with TokenTests {
       }
     }
   }
-  def ContentP1 = (
-      ElemPattern
-    | Reference
-    | CDSect
-    | PI
-    | Comment
-    | ScalaPatterns
-  )
 
   def ScalaPatterns = ScalaExpr
 
@@ -103,8 +95,9 @@ class Parser extends JavaTokenParsers with TokenTests {
   def CData   = (not("]]>") ~> Char).* ^^ { case xs => xs.mkString }
   def CDEnd   = "]]>"
 
-  def PI: Parser[Tree.Node] = positioned("<?" ~> Name ~ S.? ~ PIProcText <~ "?>" ^^ { case target ~ _ ~ proctest => Tree.ProcInstr(target, proctest) })
-  def PIProcText = (not("?>") ~> Char).* ^^ { case xs => xs.mkString }
+  def PI: Parser[Tree.Node] = positioned("<?" ~> PITarget ~ PIProcText <~ "?>" ^^ { case target ~ proctext => Tree.ProcInstr(target, proctext) })
+  def PITarget   = not(("X" | "x") ~ ("M" | "m") ~ ("L" | "l")) ~> Name
+  def PIProcText = (S ~> (not("?>") ~> Char).*).? ^^ { proctext => proctext.getOrElse(List("")).mkString }
 
   def Comment: Parser[Tree.Node] = positioned("<!--" ~> (Comment1 | Comment2).* <~ "-->" ^^ { case xs => Tree.Comment(xs.mkString) })
   def Comment1 = not("-") ~> Char
