@@ -1,6 +1,6 @@
 package dotty.xml.interpolator
 
-import org.junit.{Before, Test}
+import org.junit.Test
 import org.junit.Assert._
 
 import Tree._
@@ -189,6 +189,7 @@ class ParserTest {
 
   @Test def parseCDSect(): Unit = {
     assertEquals(PCData("foo"), xml.parseAll(xml.CDSect, "<![CDATA[foo]]>").get)
+    assertEquals(PCData("<foo>bar</foo>"), xml.parseAll(xml.CDSect, "<![CDATA[<foo>bar</foo>]]>").get)
     assertEquals(PCData(""), xml.parseAll(xml.CDSect, "<![CDATA[]]>").get)
     assertTrue(!xml.parseAll(xml.CDSect, "<![CDATA[]]>]]>").successful)
     assertTrue(!xml.parseAll(xml.CDSect, "<![CDATA[]]>]foo]>").successful)
