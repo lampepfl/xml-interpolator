@@ -37,7 +37,8 @@ class Parser extends JavaTokenParsers with TokenTests {
     | ScalaExpr
   )
   def XmlContent = (
-      CDSect
+      Unparsed
+    | CDSect
     | PI
     | Comment
     | Element
@@ -51,6 +52,11 @@ class Parser extends JavaTokenParsers with TokenTests {
     | ScalaExpr ^^ { expr => Seq(expr) }
   )  
   def ScalaExpr = Placeholder
+
+  def Unparsed = positioned( UnpStart ~> UnpData <~ UnpEnd ^^ { case data => Tree.Unparsed(data) })
+  def UnpStart = "<xml:unparsed" ~ (S ~ Attribute).* ~ S.? ~ ">"
+  def UnpData  = (not(UnpEnd) ~> Char).*.map(_.mkString)
+  def UnpEnd   = "</xml:unparsed>"
 
   def CharData: Parser[Tree.Node] = positioned(Char1.+ ^^ { case chars => Tree.Text(chars.mkString) })
 

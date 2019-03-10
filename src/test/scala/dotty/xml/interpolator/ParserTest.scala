@@ -16,6 +16,7 @@ class ParserTest {
     assertEquals(Seq(Elem("foo", Nil, empty = true, Nil)), xml.parseAll(xml.XmlExpr, "<foo/>").get)
     assertEquals(Seq(Elem("foo", Nil, empty = false, Nil)), xml.parseAll(xml.XmlExpr, "<foo></foo>").get)
     assertEquals(Seq(Elem("foo", Seq(Attribute("bar", Seq(Text("baz")))), empty = false, Seq(Text("qux")))), xml.parseAll(xml.XmlExpr, "<foo bar='baz'>qux</bar>").get)
+    assertEquals(Seq(Unparsed("<foo>bar</foo>")), xml.parseAll(xml.XmlExpr, "<xml:unparsed baz='qux'><foo>bar</foo></xml:unparsed>").get)
     assertTrue(!xml.parseAll(xml.XmlExpr, "").successful)
     assertTrue(!xml.parseAll(xml.XmlExpr, "<![CDATA[foo]]>bar").successful)
     assertTrue(!xml.parseAll(xml.XmlExpr, "<?foo bar?>baz").successful)
@@ -44,6 +45,7 @@ class ParserTest {
     assertEquals(Comment("foo"), xml.parseAll(xml.Content1, "<!--foo-->").get)
     assertEquals(Elem("foo", Seq(Attribute("bar", Seq(Text("baz")))), empty = true, Nil), xml.parseAll(xml.Content1, "<foo bar='baz'/>").get)
     assertEquals(Elem("foo", Seq(Attribute("bar", Seq(Text("baz")))), empty = false, Nil), xml.parseAll(xml.Content1, "<foo bar='baz'></foo>").get)
+    assertEquals(Unparsed("<foo>bar</foo>"), xml.parseAll(xml.Content1, "<xml:unparsed baz='qux'><foo>bar</foo></xml:unparsed>").get)
     assertEquals(EntityRef("foo"), xml.parseAll(xml.Content1, "&foo;").get)
     assertEquals(Text("&#12345;"), xml.parseAll(xml.Content1, "&#12345;").get)
   }
@@ -54,6 +56,7 @@ class ParserTest {
     assertEquals(Comment("foo"), xml.parseAll(xml.XmlContent, "<!--foo-->").get)
     assertEquals(Elem("foo", Seq(Attribute("bar", Seq(Text("baz")))), empty = true, Nil), xml.parseAll(xml.XmlContent, "<foo bar='baz'/>").get)
     assertEquals(Elem("foo", Seq(Attribute("bar", Seq(Text("baz")))), empty = false, Nil), xml.parseAll(xml.XmlContent, "<foo bar='baz'></foo>").get)
+    assertEquals(Unparsed("<foo>bar</foo>"), xml.parseAll(xml.XmlContent, "<xml:unparsed baz='qux'><foo>bar</foo></xml:unparsed>").get)
     assertTrue(!xml.parseAll(xml.XmlContent, "").successful)
     assertTrue(!xml.parseAll(xml.XmlContent, "foo").successful)
   }
@@ -90,6 +93,13 @@ class ParserTest {
     assertTrue(!xml.parseAll(xml.AttValue, "\"<foo\"").successful)
     assertTrue(!xml.parseAll(xml.AttValue, "\"&\"").successful)
     assertTrue(!xml.parseAll(xml.AttValue, "\"&foo\"").successful)
+  }
+
+  @Test def parseUnparsed(): Unit = {
+    assertEquals(Unparsed(""), xml.parseAll(xml.Unparsed, "<xml:unparsed></xml:unparsed>").get)
+    assertEquals(Unparsed("foo"), xml.parseAll(xml.Unparsed, "<xml:unparsed>foo</xml:unparsed>").get)
+    assertEquals(Unparsed("<foo>bar</foo>"), xml.parseAll(xml.Unparsed, "<xml:unparsed><foo>bar</foo></xml:unparsed>").get)
+    assertEquals(Unparsed("<foo>bar</foo>"), xml.parseAll(xml.Unparsed, "<xml:unparsed baz='qux'><foo>bar</foo></xml:unparsed>").get)
   }
 
   @Test def parseCharData(): Unit = {
