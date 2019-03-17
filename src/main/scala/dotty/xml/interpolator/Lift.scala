@@ -71,7 +71,7 @@ object Lift {
         val prefix = if (n.prefix.nonEmpty) '{ ~{n.key.toExpr} } else '{ null: String }
         val uri = (n.value.head: @unchecked) match {
           case Text(text) => text.toExpr
-          //case p : Placeholder => string staticaly known ?
+          case Placeholder(id) => args(id).asInstanceOf[String].toExpr
         }
         '{ new _root_.scala.xml.NamespaceBinding(~prefix, ~uri, ~liftNamespaces(ns)) }
       case Seq() =>
