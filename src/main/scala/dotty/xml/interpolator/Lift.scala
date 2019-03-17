@@ -22,7 +22,7 @@ object Lift {
       case elem: Elem               => liftElem(elem)
       case text: Text               => liftText(text)
       case comment: Comment         => liftComment(comment)
-      //case placeholder: Placeholder => liftPlaceholder(placeholder)
+      case placeholder: Placeholder => liftPlaceholder(placeholder)
       case pcData: PCData           => liftPCData(pcData)
       case procInstr: ProcInstr     => liftProcInstr(procInstr)
       case entityRef: EntityRef     => liftEntityRef(entityRef)
@@ -87,9 +87,9 @@ object Lift {
     new _root_.scala.xml.EntityRef(~{comment.text.toExpr})
   }
   
-  /*private def liftPlaceholder(placeholder: Placeholder)(implicit args: List[Expr[Any]]) = '{
+  private def liftPlaceholder(placeholder: Placeholder)(implicit args: List[Expr[Any]]) = {
     args(placeholder.id)
-  }*/
+  }
   
   private def liftPCData(pcdata: PCData) = '{
     new _root_.scala.xml.EntityRef(~{pcdata.data.toExpr})
