@@ -47,9 +47,9 @@ object Lift {
     val empty = elem.empty.toExpr
     val child = liftNodes(elem.children)(args, scope)
     if (elem.children.isEmpty)
-      '{ new _root_.scala.xml.Elem(~prefix, ~label, ~liftAttributes(attributes), ~liftNamespaces(namespaces), ~empty) }
+      '{ new _root_.scala.xml.Elem(~prefix, ~label, ~attributes1, ~scope, ~empty) }
     else
-      '{ new _root_.scala.xml.Elem(~prefix, ~label, ~liftAttributes(attributes), ~liftNamespaces(namespaces), ~empty, ~child: _*) } 
+      '{ new _root_.scala.xml.Elem(~prefix, ~label, ~attributes1, ~scope, ~empty, ~child: _*) }
   }
 
   private def liftAttributes(attributes: Seq[Attribute])(implicit args: List[Expr[Any]], outer: Expr[scala.xml.NamespaceBinding]): Expr[scala.xml.MetaData] = {
