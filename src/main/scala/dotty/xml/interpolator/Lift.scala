@@ -66,17 +66,14 @@ object Lift {
   }
 
   private def liftNamespaces(namespaces: Seq[Attribute])(implicit args: List[Expr[Any]], outer: Expr[scala.xml.NamespaceBinding]): Expr[scala.xml.NamespaceBinding] = {
-    namespaces match {
-      case n +: ns =>
-        val prefix = if (n.prefix.nonEmpty) '{ ~{n.key.toExpr} } else '{ null: String }
-        val uri = (n.value.head: @unchecked) match {
+    namespaces.foldRight('{ ~outer })((ns, rest) => {
+      val prefix = if (ns.prefix.nonEmpty) '{ ~{ns.key.toExpr} } else '{ null: String }
+        val uri = (ns.value.head: @unchecked) match {
           case Text(text) => text.toExpr
           case Placeholder(id) => args(id).asInstanceOf[String].toExpr
         }
-        '{ new _root_.scala.xml.NamespaceBinding(~prefix, ~uri, ~liftNamespaces(ns)) }
-      case Seq() =>
-        '{ ~outer }
-    }
+        '{ new _root_.scala.xml.NamespaceBinding(~prefix, ~uri, ~rest) }
+    })
   }
   
   private def liftText(text: Text) = '{
