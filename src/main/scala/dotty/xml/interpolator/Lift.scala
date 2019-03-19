@@ -22,7 +22,7 @@ object Lift {
       case elem: Elem               => liftElem(elem)
       case text: Text               => liftText(text)
       case comment: Comment         => liftComment(comment)
-      case placeholder: Placeholder => liftPlaceholder(placeholder)
+      //case placeholder: Placeholder => liftPlaceholder(placeholder)
       case pcData: PCData           => liftPCData(pcData)
       case procInstr: ProcInstr     => liftProcInstr(procInstr)
       case entityRef: EntityRef     => liftEntityRef(entityRef)
@@ -31,7 +31,7 @@ object Lift {
   }
 
   private def liftNodes(nodes: Seq[Node])(implicit args: List[Expr[Any]], outer: Expr[scala.xml.NamespaceBinding]): Expr[scala.xml.NodeBuffer] = {
-    nodes.foldRight('{ new _root_.scala.xml.NodeBuffer })((node, expr) => '{ ~expr &+ ~liftNode(node) } )
+    nodes.foldRight('{ new _root_.scala.xml.NodeBuffer() })((node, expr) => '{ ~expr &+ ~liftNode(node) } )
   }
 
   private def liftGroup(group: Group)(implicit args: List[Expr[Any]], outer: Expr[scala.xml.NamespaceBinding]) = '{
@@ -53,7 +53,7 @@ object Lift {
   }
 
   private def liftAttributes(attributes: Seq[Attribute])(implicit args: List[Expr[Any]], outer: Expr[scala.xml.NamespaceBinding]): Expr[scala.xml.MetaData] = {
-    attributes.foldRight('{ _root_.scala.xml.Null}: Expr[scala.xml.MetaData])((attr, rest) => {
+    attributes.foldRight('{ _root_.scala.xml.Null }: Expr[scala.xml.MetaData])((attr, rest) => {
       val value = attr.value match {
           case Seq(v) => liftNode(v)
           case vs     => liftNodes(vs)
@@ -68,20 +68,20 @@ object Lift {
   private def liftNamespaces(namespaces: Seq[Attribute])(implicit args: List[Expr[Any]], outer: Expr[scala.xml.NamespaceBinding]): Expr[scala.xml.NamespaceBinding] = {
     namespaces.foldRight('{ ~outer })((ns, rest) => {
       val prefix = if (ns.prefix.nonEmpty) '{ ~{ns.key.toExpr} } else '{ null: String }
-        val uri = (ns.value.head: @unchecked) match {
-          case Text(text) => text.toExpr
-          case Placeholder(id) => args(id).asInstanceOf[String].toExpr
-        }
-        '{ new _root_.scala.xml.NamespaceBinding(~prefix, ~uri, ~rest) }
+      val uri = (ns.value.head: @unchecked) match {
+        case Text(text) => text.toExpr
+        case Placeholder(id) => args(id).asInstanceOf[String].toExpr
+      }
+      '{ new _root_.scala.xml.NamespaceBinding(~prefix, ~uri, ~rest) }
     })
   }
   
   private def liftText(text: Text) = '{
-    new _root_.scala.xml.EntityRef(~{text.text.toExpr})
+    new _root_.scala.xml.Text(~{text.text.toExpr})
   }
   
   private def liftComment(comment: Comment) = '{
-    new _root_.scala.xml.EntityRef(~{comment.text.toExpr})
+    new _root_.scala.xml.Comment(~{comment.text.toExpr})
   }
   
   private def liftPlaceholder(placeholder: Placeholder)(implicit args: List[Expr[Any]]) = {
@@ -89,7 +89,7 @@ object Lift {
   }
   
   private def liftPCData(pcdata: PCData) = '{
-    new _root_.scala.xml.EntityRef(~{pcdata.data.toExpr})
+    new _root_.scala.xml.PCData(~{pcdata.data.toExpr})
   }
   
   private def liftProcInstr(instr: ProcInstr) = '{
