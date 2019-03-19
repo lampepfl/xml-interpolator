@@ -9,7 +9,7 @@ class ParserTest {
 
   private val xml: Parser = new Parser()
 
-  @Test def XmlExpr(): Unit = {
+  @Test def parseXmlExpr(): Unit = {
     assertEquals(Seq(PCData("foo")), xml.parseAll(xml.XmlExpr, "<![CDATA[foo]]>").get)
     assertEquals(Seq(ProcInstr("foo", "bar")), xml.parseAll(xml.XmlExpr, "<?foo bar?>").get)
     assertEquals(Seq(Comment("foo")), xml.parseAll(xml.XmlExpr, "<!--foo-->").get)
