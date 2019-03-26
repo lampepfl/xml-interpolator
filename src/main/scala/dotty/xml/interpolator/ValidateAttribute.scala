@@ -4,24 +4,15 @@ import scala.quoted._
 
 import Tree._
 
-object ValidateAttribute extends Function1[Seq[Node], Seq[Node]] {
+object ValidateAttribute {
 
-  def apply(nodes: Seq[Node]): Seq[Node] = {
-    validate(nodes)
-    nodes
-  }
-
-  private def validate(nodes: Seq[Node]): Unit = {
-    nodes.foreach(validate)
-  }
-
-  private def validate(node: Node): Unit = {
-    node match {
-      case Elem(name, attributes, empty, children) =>
+  def apply(nodes: Seq[Node]): Unit = {
+    nodes.foreach(node => node match {
+      case Elem(_, attributes, _, children) =>
         val duplicates = attributes.groupBy(_.name).collect { case (_, atts) if atts.size > 1 => atts.head }
-        duplicates.foreach { duplicate => throw new QuoteError(s"duplicated attribute ${duplicate}") }
-        validate(children)
+        duplicates.foreach { duplicate => throw new QuoteError(s"attribute ${duplicate.name} may only be defined once") }
+        apply(children)
       case _ =>
-    }
+    })
   }
 }
