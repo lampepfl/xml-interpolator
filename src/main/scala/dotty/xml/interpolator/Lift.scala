@@ -12,17 +12,17 @@ object Lift {
 
   def apply(nodes: Seq[Node], args: List[Expr[Any]]): Expr[xml.Node | xml.NodeBuffer] = {
     val scope = '{ _root_.scala.xml.TopScope }
-    if (nodes.size == 1) liftNode(nodes.head)(args, scope)
+    if (nodes.size == 1) liftNode(nodes.head)(args, scope).asInstanceOf[Expr[scala.xml.Node]]
     else liftNodes(nodes)(args, scope)
   }
 
-  private def liftNode(node: Node)(implicit args: List[Expr[Any]], outer: Expr[scala.xml.NamespaceBinding]): Expr[scala.xml.Node] = {
+  private def liftNode(node: Node)(implicit args: List[Expr[Any]], outer: Expr[scala.xml.NamespaceBinding]) = {
     node match {
       case group: Group             => liftGroup(group)
       case elem: Elem               => liftElem(elem)
       case text: Text               => liftText(text)
       case comment: Comment         => liftComment(comment)
-      //case placeholder: Placeholder => liftPlaceholder(placeholder)
+      case placeholder: Placeholder => liftPlaceholder(placeholder)
       case pcData: PCData           => liftPCData(pcData)
       case procInstr: ProcInstr     => liftProcInstr(procInstr)
       case entityRef: EntityRef     => liftEntityRef(entityRef)
@@ -55,7 +55,7 @@ object Lift {
   private def liftAttributes(attributes: Seq[Attribute])(implicit args: List[Expr[Any]], outer: Expr[scala.xml.NamespaceBinding]): Expr[scala.xml.MetaData] = {
     attributes.foldRight('{ _root_.scala.xml.Null }: Expr[scala.xml.MetaData])((attr, rest) => {
       val value = attr.value match {
-          case Seq(v) => liftNode(v)
+          case Seq(v) => liftNode(v).asInstanceOf[Expr[scala.xml.Node]]
           case vs     => liftNodes(vs)
       }
       if (attr.prefix.isEmpty)
