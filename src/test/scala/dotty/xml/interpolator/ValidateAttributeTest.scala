@@ -8,12 +8,7 @@ import Tree._
 
 class ValidateAttributeTest {
 
-  @Test def validate(): Unit = {
-    val xml = Seq(Elem("foo", Seq(Attribute("bar", Seq(Text("baz")))), empty = true, Nil))
-    assertEquals(xml, ValidateAttribute(xml))
-  }
-
-  @Test(expected = classOf[QuoteError]) def validateError(): Unit = {
+  @Test(expected = classOf[QuoteError]) def validate(): Unit = {
     ValidateAttribute(Seq(Elem("foo", Seq(Attribute("bar", Seq(Text("baz"))), Attribute("bar", Seq(Text("baz")))), empty = true, Nil)))
   }
 

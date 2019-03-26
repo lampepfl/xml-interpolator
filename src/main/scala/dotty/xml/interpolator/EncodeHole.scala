@@ -1,6 +1,7 @@
 package dotty.xml.interpolator
 
-object EncodeHole extends Function1[StringContext, String] {
+object EncodeHole {
+
   def apply(ctx: StringContext): String = {
     val parts = ctx.parts
     val sb = new StringBuilder()
