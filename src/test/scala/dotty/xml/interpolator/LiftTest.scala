@@ -47,10 +47,10 @@ class LiftTest {
   }
 
   @Test def liftAttributes(): Unit = {
-    val xml = Seq(Elem("foo", Seq(Attribute("bar", Seq(Text("baz"))), Attribute("baz:qux", Seq(Text("qun")))), empty = true, Seq()))
-    val exp = Lift(xml, Nil)
+    val xml = Seq(Elem("foo", Seq(Attribute("bar", Seq(Text("baz"))), Attribute("baz:qux", Seq(Text("qun"))), Attribute("qux", Seq(Placeholder(0)))), empty = true, Seq()))
+    val exp = Lift(xml, List(1.toExpr))
     assertEquals(
-      """new _root_.scala.xml.Elem((null: scala.Predef.String), "foo", new _root_.scala.xml.UnprefixedAttribute("bar", new _root_.scala.xml.Text("baz"), new _root_.scala.xml.PrefixedAttribute("baz", "qux", new _root_.scala.xml.Text("qun"), _root_.scala.xml.Null)), _root_.scala.xml.TopScope, true)""",
+      """new _root_.scala.xml.Elem((null: scala.Predef.String), "foo", new _root_.scala.xml.UnprefixedAttribute("bar", new _root_.scala.xml.Text("baz"), new _root_.scala.xml.PrefixedAttribute("baz", "qux", new _root_.scala.xml.Text("qun"), new _root_.scala.xml.UnprefixedAttribute("qux", 1, _root_.scala.xml.Null))), _root_.scala.xml.TopScope, true)""",
       exp.show
     )
   }
@@ -60,6 +60,15 @@ class LiftTest {
     val exp = Lift(xml, Nil)
     assertEquals(
       """new _root_.scala.xml.Elem((null: scala.Predef.String), "foo", new _root_.scala.xml.UnprefixedAttribute("baz", new _root_.scala.xml.Text("qux"), _root_.scala.xml.Null), new _root_.scala.xml.NamespaceBinding("bar", "baz", _root_.scala.xml.TopScope), true)""",
+      exp.show
+    )
+  }
+
+  @Test def liftPlaceholder(): Unit = {
+    val xml = Seq(Elem("foo", Seq(), empty = true, Seq(Placeholder(0))))
+    val exp = Lift(xml, List(1.toExpr))
+    assertEquals(
+      """new _root_.scala.xml.Elem((null: scala.Predef.String), "foo", _root_.scala.xml.Null, _root_.scala.xml.TopScope, true, new _root_.scala.xml.NodeBuffer().&+(1): _*)""",
       exp.show
     )
   }
