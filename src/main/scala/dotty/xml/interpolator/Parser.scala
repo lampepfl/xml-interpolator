@@ -47,10 +47,11 @@ class Parser extends JavaTokenParsers with TokenTests {
   def Attribute = positioned(Name ~ Eq ~ AttValue ^^ { case name ~ _ ~ value => Tree.Attribute(name, value) })
 
   def AttValue = (
-      "\"" ~> (CharQ | CharRef).* <~ "\"" ^^ { case xs => Seq(Tree.Text(xs.map { case charq: String => charq; case text: Tree.Text => text.text }.mkString)) }
-    | "'"  ~> (CharA | CharRef).* <~ "'"  ^^ { case xs => Seq(Tree.Text(xs.map { case charq: String => charq; case text: Tree.Text => text.text }.mkString)) }
-    | ScalaExpr ^^ { expr => Seq(expr) }
-  )  
+      "\"" ~> (CharQ | CharRef).* <~ "\"" ^^ { case xs => Left.apply(xs.map { case charq: String => charq; case text: Tree.Text => text.text }.mkString) }
+    | "'"  ~> (CharA | CharRef).* <~ "'"  ^^ { case xs => Left.apply(xs.map { case charq: String => charq; case text: Tree.Text => text.text }.mkString) }
+    | ScalaExpr ^^ { expr => Right.apply(expr) }
+  )
+
   def ScalaExpr = Placeholder
 
   def Unparsed = positioned( UnpStart ~> UnpData <~ UnpEnd ^^ { case data => Tree.Unparsed(data) })
@@ -117,5 +118,5 @@ class Parser extends JavaTokenParsers with TokenTests {
 
   def Eq = S.? ~ "=" ~ S.?
 
-  def Placeholder: Parser[Tree.Node] = positioned(HoleStart ~> HoleChar.* ^^ { case chars => Tree.Placeholder(chars.length /* -1 ??? */) })
+  def Placeholder = positioned(HoleStart ~ HoleChar.* ^^ { case char ~ chars => Tree.Placeholder((char :: chars).length -1) })
 }
