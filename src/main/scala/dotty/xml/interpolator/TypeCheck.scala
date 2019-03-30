@@ -1,6 +1,5 @@
 package dotty.xml.interpolator
 
-import scala.language.implicitConversions
 import scala.quoted._
 import scala.tasty._
 
@@ -8,8 +7,8 @@ import Tree._
 
 object TypeCheck {
 
-  def apply(nodes: Seq[Node], args: List[Expr[Any]])(implicit reflection: Reflection): Unit = {
-    import reflection._
+  def apply(nodes: Seq[Node], args: List[Expr[Any]])(implicit reflect: Reflection): Unit = {
+    import reflect._
     nodes.foreach(node => node match {
       case e : Elem =>
         e.attributes.foreach(attribute => attribute.value match {
