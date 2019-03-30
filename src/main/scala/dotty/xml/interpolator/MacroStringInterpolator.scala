@@ -54,11 +54,11 @@ abstract class MacroStringInterpolator[T] {
     def toExpr(strCtx: StringContext): Expr[StringContext] = {
       implicit def ListIsLiftable: Liftable[List[String]] = new Liftable[List[String]] {
         override def toExpr(list: List[String]): Expr[List[String]] = list match {
-          case x :: xs => '{~{x.toExpr} :: ~{toExpr(xs)}}
+          case x :: xs => '{${x.toExpr} :: ${toExpr(xs)}}
           case Nil => '{Nil}
         }
       }
-      '{StringContext(~{strCtx.parts.toList.toExpr}: _*)}
+      '{StringContext(${strCtx.parts.toList.toExpr}: _*)}
     }
   }
 
