@@ -31,11 +31,11 @@ object Lift {
   }
 
   private def liftNodes(nodes: Seq[Node])(implicit args: List[Expr[Any]], outer: Expr[scala.xml.NamespaceBinding], reflection: Reflection): Expr[scala.xml.NodeBuffer] = {
-    nodes.foldLeft('{ new _root_.scala.xml.NodeBuffer() })((expr, node) => '{ ~expr &+ ~liftNode(node) } )
+    nodes.foldLeft('{ new _root_.scala.xml.NodeBuffer() })((expr, node) => '{ $expr &+ ${liftNode(node)} } )
   }
 
   private def liftGroup(group: Group)(implicit args: List[Expr[Any]], outer: Expr[scala.xml.NamespaceBinding], reflection: Reflection) = '{
-    new _root_.scala.xml.Group(~{liftNodes(group.nodes)})
+    new _root_.scala.xml.Group(${liftNodes(group.nodes)})
   }
 
   private def liftElem(elem: Elem)(implicit args: List[Expr[Any]], outer: Expr[scala.xml.NamespaceBinding], reflection: Reflection) = {
@@ -47,9 +47,9 @@ object Lift {
     val empty = elem.empty.toExpr
     val child = liftNodes(elem.children)(args, scope, reflection)
     if (elem.children.isEmpty)
-      '{ new _root_.scala.xml.Elem(~prefix, ~label, ~attributes1, ~scope, ~empty) }
+      '{ new _root_.scala.xml.Elem($prefix, $label, $attributes1, $scope, $empty) }
     else
-      '{ new _root_.scala.xml.Elem(~prefix, ~label, ~attributes1, ~scope, ~empty, ~child: _*) }
+      '{ new _root_.scala.xml.Elem($prefix, $label, $attributes1, $scope, $empty, $child: _*) }
   }
 
   private def liftAttributes(attributes: Seq[Attribute])(implicit args: List[Expr[Any]], outer: Expr[scala.xml.NamespaceBinding], reflection: Reflection): Expr[scala.xml.MetaData] = {
@@ -63,47 +63,47 @@ object Lift {
         val term = value.unseal
         if (term.tpe <:< '[String].unseal.tpe) {
           val v = term.seal[String]
-          '{ new _root_.scala.xml.UnprefixedAttribute(~{attr.key.toExpr}, ~v, ~rest) }
+          '{ new _root_.scala.xml.UnprefixedAttribute(${attr.key.toExpr}, $v, $rest) }
         } else if (term.tpe <:< '[Seq[scala.xml.Node]].unseal.tpe) {
           val v = term.seal[Seq[scala.xml.Node]]
-          '{ new _root_.scala.xml.UnprefixedAttribute(~{attr.key.toExpr}, ~v, ~rest) }
+          '{ new _root_.scala.xml.UnprefixedAttribute(${attr.key.toExpr}, $v, $rest) }
         } else {
           val v = term.seal[Option[Seq[scala.xml.Node]]]
-          '{ new _root_.scala.xml.UnprefixedAttribute(~{attr.key.toExpr}, ~v, ~rest) }
+          '{ new _root_.scala.xml.UnprefixedAttribute(${attr.key.toExpr}, $v, $rest) }
         }
       } else {
         val term = value.unseal
         if (term.tpe <:< '[String].unseal.tpe) {
           val v = term.seal[String]
-          '{ new _root_.scala.xml.PrefixedAttribute(~{attr.prefix.toExpr}, ~{attr.key.toExpr}, ~v, ~rest) }
+          '{ new _root_.scala.xml.PrefixedAttribute(${attr.prefix.toExpr}, ${attr.key.toExpr}, $v, $rest) }
         } else if (term.tpe <:< '[Seq[scala.xml.Node]].unseal.tpe) {
           val v = term.seal[Seq[scala.xml.Node]]
-          '{ new _root_.scala.xml.PrefixedAttribute(~{attr.prefix.toExpr}, ~{attr.key.toExpr}, ~v, ~rest) }
+          '{ new _root_.scala.xml.PrefixedAttribute(${attr.prefix.toExpr}, ${attr.key.toExpr}, $v, $rest) }
         } else {
           val v = term.seal[Option[Seq[scala.xml.Node]]]
-          '{ new _root_.scala.xml.PrefixedAttribute(~{attr.prefix.toExpr}, ~{attr.key.toExpr}, ~v, ~rest) }
+          '{ new _root_.scala.xml.PrefixedAttribute(${attr.prefix.toExpr}, ${attr.key.toExpr}, $v, $rest) }
         }
       }
     })
   }
 
   private def liftNamespaces(namespaces: Seq[Attribute])(implicit args: List[Expr[Any]], outer: Expr[scala.xml.NamespaceBinding], reflection: Reflection): Expr[scala.xml.NamespaceBinding] = {
-    namespaces.foldRight('{ ~outer })((ns, rest) => {
-      val prefix = if (ns.prefix.nonEmpty) '{ ~{ns.key.toExpr} } else '{ null: String }
+    namespaces.foldRight(outer)((ns, rest) => {
+      val prefix = if (ns.prefix.nonEmpty) ns.key.toExpr else '{ null: String }
       val uri = (ns.value.head: @unchecked) match {
         case Text(text) => text.toExpr
         case Placeholder(id) => args(id).asInstanceOf[String].toExpr
       }
-      '{ new _root_.scala.xml.NamespaceBinding(~prefix, ~uri, ~rest) }
+      '{ new _root_.scala.xml.NamespaceBinding($prefix, $uri, $rest) }
     })
   }
   
   private def liftText(text: Text) = '{
-    new _root_.scala.xml.Text(~{text.text.toExpr})
+    new _root_.scala.xml.Text(${text.text.toExpr})
   }
   
   private def liftComment(comment: Comment) = '{
-    new _root_.scala.xml.Comment(~{comment.text.toExpr})
+    new _root_.scala.xml.Comment(${comment.text.toExpr})
   }
   
   private def liftPlaceholder(placeholder: Placeholder)(implicit args: List[Expr[Any]]) = {
@@ -111,18 +111,18 @@ object Lift {
   }
   
   private def liftPCData(pcdata: PCData) = '{
-    new _root_.scala.xml.PCData(~{pcdata.data.toExpr})
+    new _root_.scala.xml.PCData(${pcdata.data.toExpr})
   }
   
   private def liftProcInstr(instr: ProcInstr) = '{
-    new _root_.scala.xml.ProcInstr(~{instr.target.toExpr}, ~{instr.proctext.toExpr})
+    new _root_.scala.xml.ProcInstr(${instr.target.toExpr}, ${instr.proctext.toExpr})
   }
   
   private def liftEntityRef(ref: EntityRef) = '{
-    new _root_.scala.xml.EntityRef(~{ref.name.toExpr})
+    new _root_.scala.xml.EntityRef(${ref.name.toExpr})
   }
   
   private def liftUnparsed(unparsed: Unparsed) = '{
-    new _root_.scala.xml.Unparsed(~{unparsed.data.toExpr})
+    new _root_.scala.xml.Unparsed(${unparsed.data.toExpr})
   }
 }

@@ -9,7 +9,7 @@ import scala.quoted.Toolbox.Default._
 object Interpolator extends MacroStringInterpolator[scala.xml.Node | scala.xml.NodeBuffer] {
 
   class StringContextOps(strCtx: => StringContext) {
-    inline def xml(args: Any*): scala.xml.Node | scala.xml.NodeBuffer = ~{Interpolator('(strCtx), '(args))}
+    inline def xml(args: Any*) <: Any = ${Interpolator('strCtx, 'args)}
   }
   implicit inline def SCOps(strCtx: => StringContext): StringContextOps = new StringContextOps(strCtx)
 
