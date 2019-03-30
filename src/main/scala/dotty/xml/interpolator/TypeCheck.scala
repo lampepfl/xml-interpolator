@@ -20,12 +20,10 @@ object TypeCheck {
               case _ => Seq('[String].unseal.tpe,'[Seq[scala.xml.Node]].unseal.tpe, '[Option[Seq[scala.xml.Node]]].unseal.tpe)
             }
             if (!expected.exists(term.tpe <:< _)) {
-              throw new QuoteError(
-                s"""type mismatch;
+              error(s"""type mismatch;
                   | found   : ${term.tpe}
                   | required: ${expected.mkString(" | ")}
-                """.stripMargin
-              )
+                """.stripMargin, term.pos)
             }
           case _ =>
         })
