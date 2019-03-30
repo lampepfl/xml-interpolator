@@ -20,8 +20,9 @@ object Interpolator extends MacroStringInterpolator[scala.xml.Node | scala.xml.N
       case parser.Success(result, _) => result
       case failed : parser.NoSuccess => throw new QuoteError(failed.msg)
     }
-    ValidateAttribute(parsed)
-    TypeCheck(parsed, args)
-    Lift(parsed, args)
+    val grouped = GroupElement(parsed)
+    ValidateAttribute(grouped)
+    TypeCheck(grouped, args)
+    Lift(grouped, args)
   }
 }
