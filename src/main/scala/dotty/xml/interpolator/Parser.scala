@@ -106,9 +106,8 @@ class Parser extends JavaTokenParsers with TokenTests {
   def PITarget   = not(("X" | "x") ~ ("M" | "m") ~ ("L" | "l")) ~> Name
   def PIProcText = (S ~> (not("?>") ~> Char).*).? ^^ { proctext => proctext.getOrElse(List("")).mkString }
 
-  def Comment: Parser[Tree.Node] = positioned("<!--" ~> (Comment1 | Comment2).* <~ "-->" ^^ { case xs => Tree.Comment(xs.mkString) })
-  def Comment1 = not("-") ~> Char
-  def Comment2 = "-" ~ (not("-") ~> Char) ^^ { case dash ~ char => dash ++ char }
+  def Comment: Parser[Tree.Node] = positioned("<!--" ~> CommentText <~ "-->" ^^ { case text => Tree.Comment(text) })
+  def CommentText = (not("-->") ~> Char).* ^^ { chars => chars.mkString }
 
   def S = acceptIf(isSpace)(_ => "whitespace")
 
