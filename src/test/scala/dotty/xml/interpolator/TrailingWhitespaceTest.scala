@@ -4,16 +4,20 @@ import org.junit.Test
 import org.junit.Assert._
 
 import Interpolator._
+import Utils._
 
 class TrailingWhitespaceTest {
 
   @Test def discard(): Unit = {
-    assertEquals(xml" <foo/>", <foo/>)
+    assert(xml" <foo/>" ≈ <foo/>)
   }
 
-  @Test def keep(): Unit = {
-    assertEquals(xml"<foo>   </foo>", <foo>   </foo>)
-    assertEquals(xml"<foo> <bar/> </foo>", <foo> <bar/> </foo>)
+  @Test def keep1(): Unit = {
+    assert(xml"<foo>   </foo>" ≈ <foo>   </foo>)
+  }
+
+  @Test def keep2(): Unit = {
+    assert(xml"<foo> <bar/> </foo>" ≈ <foo> <bar/> </foo>)
   }
 
   @Test def multiline(): Unit = {
@@ -28,7 +32,6 @@ class TrailingWhitespaceTest {
           <bar/>
       </foo>
     
-    assertEquals(expected, obtained)
+    assert(expected ≈ obtained)
   }
-
 }
