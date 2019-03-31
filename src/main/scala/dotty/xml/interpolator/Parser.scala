@@ -92,10 +92,10 @@ class Parser extends JavaTokenParsers with TokenTests {
   def ScalaPatterns = ScalaExpr
 
   def Reference: Parser[Tree.Node] = positioned(EntityRef | CharRef)
-  def EntityRef = "&" ~> Name <~ ";" ^^ { case name => Tree.EntityRef(name) }
-  def CharRef   = (CharRef1 | CharRef2) ^^ { case text => Tree.Text(text) }
-  def CharRef1  = "&#" ~ "[0-9]+".r ~ ";" ^^ { case ref ~ num ~ sc => ref ++ num ++ sc }
-  def CharRef2  = "&#x" ~ "[0-9a-fA-F]+".r ~ ";" ^^ { case ref ~ hex ~ sc => ref ++ hex ++ sc }
+  def EntityRef   = "&" ~> Name <~ ";" ^^ { case name => Tree.EntityRef(name) }
+  def CharRef     = ("&#" ~> Decimal <~ ";" | "&#x" ~> Hexadecimal <~ ";") ^^ { case number => Tree.Text(number.toString) }
+  def Decimal     = "[0-9]*".r ^^ { case str => if (str.isEmpty) 0.toChar else java.lang.Integer.parseInt(str).toChar }
+  def Hexadecimal = "[0-9a-fA-F]*".r ^^ { case str => if (str.isEmpty) 0.toChar else java.lang.Integer.parseInt(str, 16).toChar }
 
   def CDSect: Parser[Tree.Node] = positioned(CDStart ~> CData <~ CDEnd ^^ { case data => Tree.PCData(data) })
   def CDStart = "<![CDATA["
