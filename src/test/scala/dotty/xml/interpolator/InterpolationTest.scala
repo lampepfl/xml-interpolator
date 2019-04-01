@@ -4,7 +4,7 @@ import org.junit.Test
 import org.junit.Assert._
 
 import Interpolator._
-import Utils._
+import XmlNodeOps._
 
 class InterpolationTest {
 

@@ -1,6 +1,6 @@
 package dotty.xml.interpolator
 
-object Utils {
+object XmlNodeOps {
   
   implicit class NodeOps(val self: scala.xml.Node) {
     def ≈(that: scala.xml.Node): Boolean =
