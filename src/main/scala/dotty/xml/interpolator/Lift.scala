@@ -88,11 +88,12 @@ object Lift {
   }
 
   private def liftNamespaces(namespaces: Seq[Attribute])(implicit args: List[Expr[Any]], outer: Expr[scala.xml.NamespaceBinding], reflection: Reflection): Expr[scala.xml.NamespaceBinding] = {
+    import reflection._
     namespaces.foldRight(outer)((ns, rest) => {
       val prefix = if (ns.prefix.nonEmpty) ns.key.toExpr else '{ null: String }
       val uri = (ns.value.head: @unchecked) match {
         case Text(text) => text.toExpr
-        case Placeholder(id) => args(id).asInstanceOf[String].toExpr
+        case Placeholder(id) => args(id).asInstanceOf[Expr[String]]
       }
       '{ new _root_.scala.xml.NamespaceBinding($prefix, $uri, $rest) }
     })

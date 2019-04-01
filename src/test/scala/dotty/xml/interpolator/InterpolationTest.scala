@@ -67,7 +67,7 @@ class InterpolationTest {
   }
 
   @Test def namespace1(): Unit = {
-    // assert(xml"""<foo xmlns=${"bar"}/>""" ≈ <foo xmlns={"bar"}/>)
+    assert(xml"""<foo xmlns=${"bar"}/>""" ≈ <foo xmlns={"bar"}/>)
     fail
   }
 
