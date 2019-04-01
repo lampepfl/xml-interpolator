@@ -102,9 +102,8 @@ class Parser extends JavaTokenParsers with TokenTests {
   def CData   = (not("]]>") ~> Char).* ^^ { case xs => xs.mkString }
   def CDEnd   = "]]>"
 
-  def PI: Parser[Tree.Node] = positioned("<?" ~> PITarget ~ PIProcText <~ "?>" ^^ { case target ~ proctext => Tree.ProcInstr(target, proctext) })
-  def PITarget   = not(("X" | "x") ~ ("M" | "m") ~ ("L" | "l")) ~> Name
-  def PIProcText = (S ~> (not("?>") ~> Char).*).? ^^ { proctext => proctext.getOrElse(List("")).mkString }
+  def PI: Parser[Tree.Node] = positioned("<?" ~> Name ~ S.? ~ PIProcText <~ "?>" ^^ { case target ~ _ ~ text => Tree.ProcInstr(target, text) })
+  def PIProcText = (not("?>") ~> Char).*.map(_.mkString)
 
   def Comment: Parser[Tree.Node] = positioned("<!--" ~> CommentText <~ "-->" ^^ { case text => Tree.Comment(text) })
   def CommentText = (not("-->") ~> Char).* ^^ { chars => chars.mkString }
