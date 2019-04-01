@@ -182,13 +182,11 @@ class SimpleNodeTest {
   }
 
   @Test def procInstr5(): Unit = {
-    //assert(xml"<?foo??>" ≈ <?foo??>)
-    fail
+    assert(xml"<?foo??>" ≈ <?foo??>)
   }
 
   @Test def procInstr6(): Unit = {
-    //assert(xml"<?foo<bar?>" ≈ <?foo<bar?>)
-    fail
+    assert(xml"<?foo<bar?>" ≈ <?foo<bar?>)
   }
 
   @Test def unparsed1(): Unit = {
