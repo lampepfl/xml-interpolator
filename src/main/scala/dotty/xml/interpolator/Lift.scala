@@ -59,30 +59,19 @@ object Lift {
           case Seq(v) => liftNode(v)
           case vs     => liftNodes(vs)
       }
-      if (attribute.prefix.isEmpty) {    
-        val term = value.unseal
-        if (term.tpe <:< '[String].unseal.tpe) {
-          val v = term.seal[String]
-          '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $v, $rest) }
-        } else if (term.tpe <:< '[Seq[scala.xml.Node]].unseal.tpe) {
-          val v = term.seal[Seq[scala.xml.Node]]
-          '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $v, $rest) }
-        } else {
-          val v = term.seal[Option[Seq[scala.xml.Node]]]
-          '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $v, $rest) }
-        }
+      val term = value.unseal
+      if (term.tpe <:< '[String].unseal.tpe) {
+        val v = term.seal[String]
+        if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $v, $rest) }
+        else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $v, $rest) }
+      } else if (term.tpe <:< '[Seq[scala.xml.Node]].unseal.tpe) {
+        val v = term.seal[Seq[scala.xml.Node]]
+        if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $v, $rest) }
+        else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $v, $rest) }
       } else {
-        val term = value.unseal
-        if (term.tpe <:< '[String].unseal.tpe) {
-          val v = term.seal[String]
-          '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $v, $rest) }
-        } else if (term.tpe <:< '[Seq[scala.xml.Node]].unseal.tpe) {
-          val v = term.seal[Seq[scala.xml.Node]]
-          '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $v, $rest) }
-        } else {
-          val v = term.seal[Option[Seq[scala.xml.Node]]]
-          '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $v, $rest) }
-        }
+        val v = term.seal[Option[Seq[scala.xml.Node]]]
+        if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $v, $rest) }
+        else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $v, $rest) }
       }
     })
   }
