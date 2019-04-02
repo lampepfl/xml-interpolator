@@ -3,8 +3,8 @@ package dotty.xml.interpolator
 import org.junit.Test
 import org.junit.Assert._
 
-import Interpolator._
-import XmlNodeOps._
+import dotty.xml.interpolator.Interpolator._
+import dotty.xml.interpolator.testing._
 
 class SimpleNodeTest {
 
