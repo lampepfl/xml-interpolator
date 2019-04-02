@@ -3,7 +3,7 @@ package dotty.xml.interpolator
 import scala.quoted._
 import scala.tasty._
 
-import Tree._
+import dotty.xml.interpolator.Tree._
 
 object TypeCheck {
 

@@ -1,8 +1,6 @@
 package dotty.xml.interpolator
 
-import scala.quoted._
-
-import Tree._
+import dotty.xml.interpolator.Tree._
 
 object GroupElement {
 

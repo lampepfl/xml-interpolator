@@ -6,7 +6,7 @@ import scala.quoted.Exprs.LiftedExpr
 import scala.quoted.Toolbox.Default._
 import scala.tasty.Reflection
 
-import Tree._
+import dotty.xml.interpolator.Tree._
 
 object Lift {
 
