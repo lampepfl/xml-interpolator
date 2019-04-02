@@ -3,8 +3,8 @@ package dotty.xml.interpolator
 import org.junit.Test
 import org.junit.Assert._
 
-import Interpolator._
-import XmlNodeOps._
+import dotty.xml.interpolator.Interpolator._
+import dotty.xml.interpolator.testing._
 
 class InterpolationTest {
 
@@ -49,8 +49,7 @@ class InterpolationTest {
   }
 
   @Test def attribute5(): Unit = {
-    // xml"<foo a=${1}/>" should not type check
-    fail
+    assert(!typeChecks(""" xml"<foo a=${1}/> """))
   }
 
   @Test def iterable(): Unit = {
@@ -68,16 +67,13 @@ class InterpolationTest {
 
   @Test def namespace1(): Unit = {
     assert(xml"""<foo xmlns=${"bar"}/>""" ≈ <foo xmlns={"bar"}/>)
-    fail
   }
 
   @Test def namespace2(): Unit = {
-    // """ xml"<foo xmlns=${<b/>}/>" """ should not type check
-    fail
+    assert(!typeChecks(""" xml"<foo xmlns=${<b/>}/>" """))
   }
 
   @Test def namespace3(): Unit = {
-    // """ xml"<foo xmlns=${None}/>" """ should not type check
-    fail
+    assert(!typeChecks(""" xml"<foo xmlns=${None}/>" """))
   }
 }
