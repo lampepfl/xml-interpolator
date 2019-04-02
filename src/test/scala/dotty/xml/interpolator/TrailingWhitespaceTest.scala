@@ -8,8 +8,20 @@ import dotty.xml.interpolator.testing._
 
 class TrailingWhitespaceTest {
 
-  @Test def discard(): Unit = {
+  @Test def discard1(): Unit = {
     assert(xml" <foo/>" ≈ <foo/>)
+  }
+
+  @Test def discard2(): Unit = {
+    assert(xml"<foo/> " ≈ <foo/>)
+  }
+
+  @Test def discard3(): Unit = {
+    assert(xml" <foo/> " ≈ <foo/>)
+  }
+
+  @Test def discard4(): Unit = {
+    assert(xml"<foo/> <bar/>" ≈ <foo/> <bar/>)
   }
 
   @Test def keep1(): Unit = {
@@ -21,9 +33,9 @@ class TrailingWhitespaceTest {
   }
 
   @Test def multiline(): Unit = {
-    val expected = xml"""
+    /*val expected = xml"""
       <foo>
-          <bar/>
+        <bar/>
       </foo>
     """
     
@@ -32,6 +44,7 @@ class TrailingWhitespaceTest {
           <bar/>
       </foo>
     
-    assert(expected ≈ obtained)
+    assert(expected ≈ obtained)*/
+    fail
   }
 }
