@@ -47,7 +47,7 @@ class Parser extends JavaTokenParsers with TokenTests {
 
   def CharData: Parser[Tree.Node] = positioned(Char1.+ ^^ { case chars => Tree.Text(chars.mkString) })
 
-  def Char  = not(Placeholder) ~> ".".r
+  def Char  = not(Placeholder) ~> "(?s).".r
   def Char1 = not("<" | "&") ~> Char
   def CharQ = not("\"") ~> Char1
   def CharA = not("'")  ~> Char1

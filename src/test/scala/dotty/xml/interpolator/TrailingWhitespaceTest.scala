@@ -33,18 +33,17 @@ class TrailingWhitespaceTest {
   }
 
   @Test def multiline(): Unit = {
-    /*val expected = xml"""
+    val expected = xml"""
       <foo>
         <bar/>
       </foo>
-    """
-    
-    val obtained = 
+      """
+
+    val obtained =
       <foo>
-          <bar/>
+        <bar/>
       </foo>
-    
-    assert(expected ≈ obtained)*/
-    fail
+
+    assert(expected ≈ obtained)
   }
 }
