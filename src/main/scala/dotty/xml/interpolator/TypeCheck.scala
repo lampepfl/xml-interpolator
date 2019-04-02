@@ -10,8 +10,8 @@ object TypeCheck {
   def apply(nodes: Seq[Node], args: List[Expr[Any]])(implicit reflect: Reflection): Unit = {
     import reflect._
     nodes.foreach(node => node match {
-      case e : Elem =>
-        e.attributes.foreach(attribute => attribute.value match {
+      case elem : Elem =>
+        elem.attributes.foreach(attribute => attribute.value match {
           case Seq(Placeholder(id)) =>
             val term = args(id).unseal
             val expected = attribute.isNamespace match {

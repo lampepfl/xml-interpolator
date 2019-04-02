@@ -99,14 +99,14 @@ class Parser extends JavaTokenParsers with TokenTests {
 
   def CDSect: Parser[Tree.Node] = positioned(CDStart ~> CData <~ CDEnd ^^ { case data => Tree.PCData(data) })
   def CDStart = "<![CDATA["
-  def CData   = (not("]]>") ~> Char).* ^^ { case xs => xs.mkString }
+  def CData   = (not("]]>") ~> Char).*.map(_.mkString)
   def CDEnd   = "]]>"
 
   def PI: Parser[Tree.Node] = positioned("<?" ~> Name ~ S.? ~ PIProcText <~ "?>" ^^ { case target ~ _ ~ text => Tree.ProcInstr(target, text) })
   def PIProcText = (not("?>") ~> Char).*.map(_.mkString)
 
   def Comment: Parser[Tree.Node] = positioned("<!--" ~> CommentText <~ "-->" ^^ { case text => Tree.Comment(text) })
-  def CommentText = (not("-->") ~> Char).* ^^ { chars => chars.mkString }
+  def CommentText = (not("-->") ~> Char).*.map(_.mkString)
 
   def S = acceptIf(isSpace)(_ => "whitespace")
 
