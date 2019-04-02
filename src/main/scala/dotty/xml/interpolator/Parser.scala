@@ -8,7 +8,9 @@ import scala.language.implicitConversions
 class Parser extends JavaTokenParsers with TokenTests {
   import Hole._
 
-  def XmlExpr: Parser[Seq[Tree.Node]] = XmlContent ~ Element.* ^^ { case elem ~ elems => elem :: elems }
+  override val whiteSpace = "".r
+
+  def XmlExpr: Parser[Seq[Tree.Node]] = S.* ~> rep1sep(XmlContent, S.*) <~ S.*
 
   def Element: Parser[Tree.Node] = positioned(
       EmptyElemTag ^^ { case name ~ attributes => Tree.Elem(name, attributes, empty = true, Nil) }
@@ -19,23 +21,7 @@ class Parser extends JavaTokenParsers with TokenTests {
 
   def STag = "<"  ~> Name ~ (S ~> Attribute).* <~ S.? <~ ">"
   def ETag = "</" ~> Name <~ S.? <~ ">"
-  def Content = (CharData.? ~ (Content1 ~ CharData.?).*) ^^ {
-    case x ~ xs => {
-      val nodes = xs.flatMap {
-        case node ~ Some(chardata) => List(node, chardata)
-        case node ~ _ => List(node)
-      }
-      x match {
-        case Some(chardata) => chardata :: nodes
-        case _ => nodes
-      }
-    }
-  }
-  def Content1 = (
-      XmlContent
-    | Reference
-    | ScalaExpr
-  )
+  def Content = (CharData | Reference | ScalaExpr | XmlContent).*
   def XmlContent = (
       Unparsed
     | CDSect
