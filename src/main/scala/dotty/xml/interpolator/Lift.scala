@@ -89,7 +89,7 @@ object Lift {
 
   private def liftNamespaces(namespaces: Seq[Attribute])(implicit args: List[Expr[Any]], outer: Expr[scala.xml.NamespaceBinding], reflect: Reflection): Expr[scala.xml.NamespaceBinding] = {
     import reflect._
-    namespaces.foldRight(outer)((namespace, rest) => {
+    namespaces.foldLeft(outer)((rest, namespace) => {
       val prefix = if (namespace.prefix.nonEmpty) namespace.key.toExpr else '{ null: String }
       val uri = (namespace.value.head: @unchecked) match {
         case Text(text) => text.toExpr
