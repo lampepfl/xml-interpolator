@@ -4,7 +4,6 @@ import org.junit.Test
 import org.junit.Assert._
 
 import dotty.xml.interpolator.Interpolator._
-import dotty.xml.interpolator.testing._
 
 class SimpleNodeTest {
 
