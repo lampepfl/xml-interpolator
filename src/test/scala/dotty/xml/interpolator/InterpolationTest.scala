@@ -61,8 +61,7 @@ class InterpolationTest {
   }
 
   @Test def unit(): Unit = {
-    //assert(xml"<foo>${}</foo>" ≈ <foo>{}</foo>)
-    fail
+    assert(xml"<foo>${}</foo>" ≈ <foo>{}</foo>)
   }
 
   @Test def namespace1(): Unit = {
