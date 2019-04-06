@@ -3,12 +3,13 @@ package dotty.xml.interpolator
 import scala.language.implicitConversions
 import scala.quoted._
 import scala.quoted.Exprs.LiftedExpr
-import scala.quoted.Toolbox.Default._
 import scala.tasty.Reflection
 
 import dotty.xml.interpolator.Tree._
 
 object Lift {
+
+  implicit val toolbox: scala.quoted.Toolbox = scala.quoted.Toolbox.make(this.getClass.getClassLoader)
 
   def apply(nodes: Seq[Node], args: List[Expr[Any]])(implicit reflect: Reflection): Expr[xml.Node | xml.NodeBuffer] = {
     val scope = '{ _root_.scala.xml.TopScope }
@@ -61,15 +62,15 @@ object Lift {
       }
       val term = value.unseal
       if (term.tpe <:< '[String].unseal.tpe) {
-        val v = term.seal[String]
+        val v = term.seal.cast[String]
         if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $v, $rest) }
         else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $v, $rest) }
       } else if (term.tpe <:< '[Seq[scala.xml.Node]].unseal.tpe) {
-        val v = term.seal[Seq[scala.xml.Node]]
+        val v = term.seal.cast[Seq[scala.xml.Node]]
         if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $v, $rest) }
         else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $v, $rest) }
       } else {
-        val v = term.seal[Option[Seq[scala.xml.Node]]]
+        val v = term.seal.cast[Option[Seq[scala.xml.Node]]]
         if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $v, $rest) }
         else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $v, $rest) }
       }
