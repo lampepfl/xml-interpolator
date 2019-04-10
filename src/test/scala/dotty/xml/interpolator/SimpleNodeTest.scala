@@ -72,18 +72,15 @@ class SimpleNodeTest {
   }
 
   @Test def entityRef5(): Unit = {
-    // assert(xml"""<foo a="&name;"/>""" ≈ <foo a="&name;"/>)
-    fail
+    assert(xml"""<foo a="&name;"/>""" ≈ <foo a="&name;"/>)
   }
 
   @Test def entityRef6(): Unit = {
-    // assert(xml"""<foo a="&na:me;"/>""" ≈ <foo a="&na:me;"/>)
-    fail
+    assert(xml"""<foo a="&na:me;"/>""" ≈ <foo a="&na:me;"/>)
   }
 
   @Test def entityRef7(): Unit = {
-    // assert(xml"""<foo a="&lt;"/>""" ≈ <foo a="&lt;"/>)
-    fail
+    assert(xml"""<foo a="&lt;"/>""" ≈ <foo a="&lt;"/>)
   }
 
   @Test def entityRef8(): Unit = {
@@ -92,8 +89,7 @@ class SimpleNodeTest {
   }
 
   @Test def entityRef9(): Unit = {
-    // assert(xml"""<foo a="1 &lt; 2"/>""" ≈ <foo a="1 &lt; 2"/>)
-    fail
+    assert(xml"""<foo a="1 &lt; 2"/>""" ≈ <foo a="1 &lt; 2"/>)
   }
 
   @Test def charRef1(): Unit = {
