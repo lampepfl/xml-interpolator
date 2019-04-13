@@ -5,14 +5,15 @@ import scala.tasty.Reflection
 import scala.language.implicitConversions
 import scala.quoted.Exprs.LiftedExpr
 
-object Interpolator extends MacroStringInterpolator[scala.xml.Node | scala.xml.NodeBuffer] {
+object Interpolator {
 
-  class StringContextOps(strCtx: => StringContext) {
-    inline def xml(args: Any*) <: Any = ${Interpolator('strCtx, 'args)}
+  implicit object StringContextOps {
+    inline def (ctx: => StringContext) xml (args: => Any*) <: Any =
+      ${Interpolator.interpolate('ctx, 'args)}
   }
-  implicit inline def SCOps(strCtx: => StringContext): StringContextOps = new StringContextOps(strCtx)
 
-  protected def interpolate(strCtx: StringContext, args: List[Expr[Any]])(implicit reflect: Reflection): Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
+  private def interpolate(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[Any]])(implicit reflect: Reflection): Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
+    val (strCtx, args) = ExtractStatic(strCtxExpr, argsExpr)
     val encoded = EncodeHole(strCtx)
     val parser  = new Parser()
     val parsed  = parser.parseAll(parser.XmlExpr, encoded) match {
