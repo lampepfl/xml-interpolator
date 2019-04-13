@@ -14,9 +14,9 @@ object Interpolator {
 
   private def interpolate(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[Any]])(implicit reflect: Reflection): Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
     val (strCtx, args) = ExtractStatic(strCtxExpr, argsExpr)
-    val encoded = EncodeHole(strCtx)
-    val parser  = new Parser()
-    val parsed  = parser.parseAll(parser.XmlExpr, encoded) match {
+    val (encoded, offsets) = EncodeHole(strCtx)
+    val parser = new Parser()
+    val parsed = parser.parseAll(parser.XmlExpr, encoded) match {
       case parser.Success(result, _) => result
       case failed : parser.NoSuccess => throw new QuoteError(failed.msg)
     }
