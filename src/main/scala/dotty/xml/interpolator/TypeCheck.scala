@@ -20,8 +20,8 @@ object TypeCheck {
             }
             if (!expected.exists(term.tpe <:< _)) {
               error(s"""type mismatch;
-                  | found   : ${term.tpe.widen.showCode}
-                  | required: ${expected.map(_.showCode).mkString(" | ")}
+                  | found   : ${term.tpe.widen.show}
+                  | required: ${expected.map(_.show).mkString(" | ")}
                 """.stripMargin, term.pos)
             }
           case _ =>
