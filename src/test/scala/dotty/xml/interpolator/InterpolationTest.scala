@@ -50,7 +50,7 @@ class InterpolationTest {
   }
 
   @Test def attribute5(): Unit = {
-    assert(!typeChecks(""" xml"<foo a=${1}/> """))
+    assert(!typeChecks(""" xml"<foo a=${1}/>" """))
   }
 
   @Test def iterable(): Unit = {
