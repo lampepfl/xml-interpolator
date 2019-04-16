@@ -6,13 +6,19 @@ import dotty.xml.interpolator.Tree._
 
 object ValidateAttribute {
 
-  def apply(nodes: Seq[Node]): Unit = {
-    nodes.foreach(node => node match {
+  def apply(nodes: Seq[Node])(implicit reporter: Reporter): Unit = {
+    nodes.foreach {
       case Elem(_, attributes, _, children) =>
-        val duplicates = attributes.groupBy(_.name).collect { case (_, attributes) if attributes.size > 1 => attributes.head }
-        duplicates.foreach { duplicate => throw new QuoteError(s"attribute ${duplicate.name} may only be defined once") }
+        attributes
+          .groupBy(_.name)
+          .collect { case (_, attributes) if attributes.size > 1 => attributes.head }
+          .foreach { attribute =>
+            reporter.error(
+              s"attribute ${attribute.name} may only be defined once",
+              attribute.pos.asInstanceOf[scala.util.parsing.input.OffsetPosition].offset
+          )}
         apply(children)
       case _ =>
-    })
+    }
   }
 }

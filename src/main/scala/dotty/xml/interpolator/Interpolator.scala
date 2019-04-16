@@ -15,14 +15,20 @@ object Interpolator {
   private def interpolate(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[Any]])(implicit reflect: Reflection): Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
     val (strCtx, args) = ExtractStatic(strCtxExpr, argsExpr)
     val (encoded, offsets) = EncodeHole(strCtx)
+    val reporter = Reporter(offsets, strCtxExpr)
     val parser = new Parser()
     val parsed = parser.parseAll(parser.XmlExpr, encoded) match {
       case parser.Success(result, _) => result
-      case failed : parser.NoSuccess => throw new QuoteError(failed.msg)
+      case failed : parser.NoSuccess =>
+        reporter.error(
+          failed.msg,
+          failed.next.pos.asInstanceOf[scala.util.parsing.input.OffsetPosition].offset
+        )
+      throw new QuoteError(failed.msg)
     }
     val grouped = GroupElement(parsed)
-    ValidateAttribute(grouped)
-    TypeCheck(grouped, args)
+    ValidateAttribute(grouped)(reporter)
+    TypeCheck(grouped, args)(reflect, reporter)
     Lift(grouped, args)
   }
 }
