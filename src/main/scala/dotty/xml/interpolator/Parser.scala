@@ -95,7 +95,7 @@ class Parser extends JavaTokenParsers with TokenTests {
     }
     attribute.value match {
       case Seq(placeholder : Tree.Placeholder) => attribute
-      case Seq(text : Tree.Text) => attribute.copy(value = normalize(text.text, attribute.pos))
+      case Seq(text : Tree.Text) => attribute.copy(value = normalize(text.text, attribute.pos)).setPos(attribute.pos)
     }
   }
 
