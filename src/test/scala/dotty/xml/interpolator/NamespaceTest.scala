@@ -6,7 +6,7 @@ import org.junit.Assert._
 import dotty.xml.interpolator.Interpolator._
 
 class NamespaceTest {
-
+/*
   @Test def unprefixed(): Unit = {
     assert(xml"""<foo xmlns="uri"/>""" ≈ <foo xmlns="uri"/>)
   }
@@ -29,5 +29,5 @@ class NamespaceTest {
 
   @Test def scope(): Unit = {
     assert(xml"""<foo xmlns:pre="scope0">${xml"<bar/>"}</foo>""" ≈ <foo xmlns:pre="scope0">{<bar/>}</foo>)
-  }
+  }*/
 }

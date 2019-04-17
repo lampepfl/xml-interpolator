@@ -13,6 +13,7 @@ object Reporter {
   def apply(offsets: Array[Int], strCtxExpr: Expr[StringContext])(implicit reflect: Reflection): Reporter = {
     import reflect._
     val parts = getStringContextPartsExpr(strCtxExpr)
+    // TODO use first part of parts
     val beginning = if (parts(0).pos.sourceCode.startsWith("\"\"\"")) 2 else 0
     new Reporter{
       def error(msg: String, offset: Int): Unit = {
