@@ -6,7 +6,7 @@ import org.junit.Assert._
 import dotty.xml.interpolator.Interpolator._
 
 class TrailingWhitespaceTest {
-
+/*
   @Test def discard1(): Unit = {
     assert(xml" <foo/>" ≈ <foo/>)
   }
@@ -44,5 +44,5 @@ class TrailingWhitespaceTest {
       </foo>
 
     assert(expected ≈ obtained)
-  }
+  }*/
 }
