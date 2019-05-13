@@ -24,7 +24,7 @@ object Interpolator {
           failed.msg,
           failed.next.pos.asInstanceOf[scala.util.parsing.input.OffsetPosition].offset
         )
-      throw new QuoteError(failed.msg)
+      throw new QuoteError(failed.msg, None)
     }
     val grouped = GroupElement(parsed)
     ValidateAttribute(grouped)(reporter)
