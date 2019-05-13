@@ -13,8 +13,6 @@ object Reporter {
   def apply(offsets: Array[Int], strCtxExpr: Expr[StringContext])(implicit reflect: Reflection): Reporter = {
     import reflect._
     val parts = getStringContextPartsExpr(strCtxExpr)
-    // TODO use first part of parts
-    val beginning = if (parts(0).pos.sourceCode.startsWith("\"\"\"")) 2 else 0
     new Reporter{
       def error(msg: String, offset: Int): Unit = {
         val index = offsets.lastIndexWhere(offset >= _)
@@ -24,14 +22,14 @@ object Reporter {
             val partIndex = (index - 1) / 2
             val position = parts(partIndex).pos
             val source = position.sourceFile
-            val start = beginning + position.start + (offset - offsets(index - 1))
+            val start = position.start + (offset - offsets(index - 1))
             val end = start + 1
             (source, start, end)
           } else {
             val partIndex = index / 2
             val position = parts(partIndex).pos
             val source = position.sourceFile
-            val start = beginning + position.start + (offset - offsets(index))
+            val start = position.start + (offset - offsets(index))
             val end = start + 1
             (source, start, end)
           }
