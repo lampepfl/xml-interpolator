@@ -1,10 +1,9 @@
-package dotty.xml.interpolator
+package dotty.xml.interpolator.internal
 
 import scala.collection.mutable.ArrayBuffer
 
-object EncodeHole {
-
-  def apply(ctx: StringContext): (String, Array[Int]) = {
+object Encode {
+  def apply(parts: Seq[String]): (String, Array[Int]) = {
 
     val sb = new StringBuilder()
     val bf = ArrayBuffer.empty[Int]
@@ -19,7 +18,6 @@ object EncodeHole {
       sb ++= Hole.encode(index)
     }
 
-    val parts = ctx.parts
     for ((part, index) <- parts.init.zipWithIndex) {
       appendPart(part)
       appendHole(index)
