@@ -3,8 +3,6 @@ package dotty.xml.interpolator
 import org.junit.Test
 import org.junit.Assert._
 
-import dotty.xml.interpolator.Interpolator._
-
 class TrailingWhitespaceTest {
 
   @Test def discard1(): Unit = {

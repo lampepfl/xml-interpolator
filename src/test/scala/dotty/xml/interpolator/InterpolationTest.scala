@@ -5,8 +5,6 @@ import org.junit.Assert._
 
 import scala.testing._
 
-import dotty.xml.interpolator.Interpolator._
-
 class InterpolationTest {
 
   @Test def elem1(): Unit = {

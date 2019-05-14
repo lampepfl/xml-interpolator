@@ -1,10 +1,9 @@
-package dotty.xml.interpolator
+package dotty.xml.interpolator.internal
 
 import scala.collection.mutable.ListBuffer
 import scala.util.parsing.input._
 
 object Tree {
-
   sealed abstract class Node extends Positional
   final case class Group(nodes: Seq[Node]) extends Node
   final case class Elem(name: String, attributes: Seq[Attribute], empty: Boolean, children: Seq[Node]) extends Node {

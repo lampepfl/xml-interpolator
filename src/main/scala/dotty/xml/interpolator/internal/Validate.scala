@@ -1,22 +1,21 @@
-package dotty.xml.interpolator
+package dotty.xml.interpolator.internal
 
-import scala.quoted._
+import scala.language.implicitConversions
 
-import dotty.xml.interpolator.Tree._
+import dotty.xml.interpolator.internal.Tree._
 
-object ValidateAttribute {
-
-  def apply(nodes: Seq[Node])(implicit reporter: Reporter): Unit = {
+object Validate {
+  def apply(nodes: Seq[Node]): Unit = {
     nodes.foreach {
       case Elem(_, attributes, _, children) =>
         attributes
           .groupBy(_.name)
           .collect { case (_, attributes) if attributes.size > 1 => attributes.head }
           .foreach { attribute =>
-            reporter.error(
+            throw new ValidationError(
               s"attribute ${attribute.name} may only be defined once",
-              attribute.pos.asInstanceOf[scala.util.parsing.input.OffsetPosition].offset
-          )}
+              attribute.pos
+            )}
         apply(children)
       case _ =>
     }
