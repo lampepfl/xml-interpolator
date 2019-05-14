@@ -1,6 +1,6 @@
 package dotty.xml.interpolator.internal
 
-object Group {
+object Transform {
   def apply(nodes: Seq[Tree.Node]): Seq[Tree.Node] = {
     nodes.map {
       case elem : Tree.Elem =>
