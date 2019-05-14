@@ -7,7 +7,7 @@ import scala.tasty.Reflection
 
 import dotty.xml.interpolator.internal.Tree._
 
-object Generate {
+object Expand {
 
   implicit val toolbox: scala.quoted.Toolbox = scala.quoted.Toolbox.make(this.getClass.getClassLoader)
 

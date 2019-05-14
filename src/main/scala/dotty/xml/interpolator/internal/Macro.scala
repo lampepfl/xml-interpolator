@@ -19,7 +19,7 @@ object Macro {
         val tree = Group(nodes)
         Validate(tree)
         TypeCheck(tree)
-        Generate(tree)
+        Expand(tree)
     }
   }
 }
