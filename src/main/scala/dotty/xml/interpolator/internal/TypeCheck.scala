@@ -6,7 +6,7 @@ import scala.tasty._
 import dotty.xml.interpolator.internal.Tree._
 
 object TypeCheck {
-  def apply(nodes: Seq[Node], args: Seq[Expr[Any]]) given (reflect: Reflection): Unit = {
+  def apply(nodes: Seq[Node]) given (args: Seq[Expr[Any]]) given (reflect: Reflection): Unit = {
     import reflect._
     nodes.foreach {
       case elem : Elem =>
@@ -31,6 +31,7 @@ object TypeCheck {
               }
             case _ =>
         })
+        apply(elem.children)
       case _ =>
     }
   }
