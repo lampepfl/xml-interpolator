@@ -12,14 +12,10 @@ object Parse extends JavaTokenParsers with TokenTests {
 
   override val whiteSpace = "".r
 
-  def apply(input: String): Seq[Tree.Node] = {
+  def apply(input: String) given (reporter: Reporter): Seq[Tree.Node] = {
     parseAll(XmlExpr, input) match {
       case Success(result, _) => result
-      case failed : NoSuccess =>
-        throw new ParsingError(
-          failed.msg,
-          failed.next.pos
-        )
+      case failed : NoSuccess => reporter.error(failed.msg, failed.next.pos); Nil
     }
   }
 

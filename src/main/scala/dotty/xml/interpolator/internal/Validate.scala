@@ -5,17 +5,13 @@ import scala.language.implicitConversions
 import dotty.xml.interpolator.internal.Tree._
 
 object Validate {
-  def apply(nodes: Seq[Node]): Unit = {
+  def apply(nodes: Seq[Node]) given (reporter: Reporter): Unit = {
     nodes.foreach {
       case Elem(_, attributes, _, children) =>
         attributes
           .groupBy(_.name)
           .collect { case (_, attributes) if attributes.size > 1 => attributes.head }
-          .foreach { attribute =>
-            throw new ValidationError(
-              s"attribute ${attribute.name} may only be defined once",
-              attribute.pos
-            )}
+          .foreach { attribute => reporter.error(s"attribute ${attribute.name} may only be defined once", attribute.pos )}
         apply(children)
       case _ =>
     }
