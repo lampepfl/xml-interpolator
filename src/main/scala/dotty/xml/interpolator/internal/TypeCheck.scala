@@ -6,7 +6,7 @@ import scala.tasty._
 import dotty.xml.interpolator.internal.Tree._
 
 object TypeCheck {
-  def apply(nodes: Seq[Node]) given (args: Seq[Expr[Any]]) given (reflect: Reflection): Unit = {
+  def apply(nodes: Seq[Node]) given (args: Seq[Expr[Any]]) given (reporter: Reporter) given (reflect: Reflection): Unit = {
     import reflect._
     nodes.foreach {
       case elem : Elem =>
@@ -23,7 +23,7 @@ object TypeCheck {
                 )
               }
               if (!expected.exists(term.tpe <:< _)) {
-                throw new TypeCheckingError(
+                reporter.error(
                   """type mismatch;
                     | found   : ${term.tpe.widen.show}
                     | required: ${expected.map(_.show).mkString(" | ")}
