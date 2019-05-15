@@ -60,21 +60,22 @@ object Macro {
   }
 
   private def implCore(xmlStr: String) given Seq[Expr[Any]] given Reporter given Reflection: Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
-    var tree = Parse(xmlStr); tree = Transform(tree)
-    Validate(tree)
-    TypeCheck(tree)
-    Expand(tree)
 
-    /** TODO
-      val interpolate = (
-        Parse
-          andThen Transform
-          andThen Validate
-          andThen TypeCheck
-          andThen Expand
-      )
-      interpolate(xmlStr)
-    */
+    import Parse.{apply => parse}
+    import Transform.{apply => transform}
+    import Validate.{apply => validate}
+    import TypeCheck.{apply => typecheck}
+    import Lift.{apply => expand}
+
+    val interpolate = (
+      parse
+        andThen transform
+        andThen validate
+        andThen typecheck
+        andThen expand
+    )
+
+    interpolate(xmlStr)
   }
 
   private def encode(parts: Seq[Expr[String]]) given Reflection: (String, Array[Int]) = {
