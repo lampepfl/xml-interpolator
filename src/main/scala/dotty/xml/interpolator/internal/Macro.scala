@@ -15,7 +15,8 @@ object Macro {
     ((strCtxExpr, argsExpr): @unchecked) match {
       case ('{ StringContext(${ExprSeq(parts)}: _*) }, ExprSeq(args)) =>
         val (xmlStr, offsets) = encode(parts)
-        implicit val arguments: Seq[Expr[Any]] = args
+        val scope = '{ _root_.scala.xml.TopScope }
+        implicit val ctx: XmlContext = new XmlContext(args, scope)
         implicit val reporter: Reporter = new Reporter {
           import reflect._
 
@@ -39,7 +40,8 @@ object Macro {
       case ('{ StringContext(${ExprSeq(parts)}: _*) }, ExprSeq(args)) =>
         val errors = List.newBuilder[Expr[(Int, Int, String)]]
         val (xmlStr, offsets) = encode(parts)
-        implicit val arguments: Seq[Expr[Any]] = args
+        val scope = '{ _root_.scala.xml.TopScope }
+        implicit val ctx: XmlContext = new XmlContext(args, scope)
         implicit val reporter: Reporter = new Reporter {
           import reflect._
 
@@ -60,7 +62,7 @@ object Macro {
     }
   }
 
-  private def implCore(xmlStr: String) given Seq[Expr[Any]] given Reporter given Reflection: Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
+  private def implCore(xmlStr: String) given XmlContext, Reporter, Reflection: Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
 
     import Parse.{apply => parse}
     import Transform.{apply => transform}
