@@ -46,10 +46,8 @@ object Macro {
           import reflect._
 
           def error(msg: String, idx: Int): Unit = {
-            val (part, offset) = Reporter.from(idx, offsets, parts)
-            val pos = part.unseal.pos
-            val (srcF, start) = (pos.sourceFile, pos.start)
-            errors += '{ Tuple3(${start + offset}, ${start + offset + 1}, $msg) }
+            val (_, offset) = Reporter.from(idx, offsets, parts)
+            errors += '{ Tuple3(${offset}, ${offset + 1}, $msg) }
           }
 
           def error(msg: String, expr: Expr[Any]): Unit = {
