@@ -1,4 +1,5 @@
-package dotty.xml.interpolator.internal
+package dotty.xml.interpolator
+package internal
 
 import scala.quoted._
 import scala.quoted.autolift._
@@ -65,7 +66,7 @@ object Macro {
     import Transform.{apply => transform}
     import Validate.{apply => validate}
     import TypeCheck.{apply => typecheck}
-    import Lift.{apply => expand}
+    import Expand.{apply => expand}
 
     val interpolate = (
       parse
