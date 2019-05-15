@@ -9,6 +9,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.language.implicitConversions
 
 object Macro {
+
   def impl(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[Any]]) given (reflect: Reflection): Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
     ((strCtxExpr, argsExpr): @unchecked) match {
       case ('{ StringContext(${ExprSeq(parts)}: _*) }, ExprSeq(args)) =>
@@ -29,6 +30,32 @@ object Macro {
           }
         }
         implCore(xmlStr)
+    }
+  }
+
+  def implErrors(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[Any]]) given (reflect: Reflection): Expr[List[(Int, Int, String)]] = {
+    ((strCtxExpr, argsExpr): @unchecked) match {
+      case ('{ StringContext(${ExprSeq(parts)}: _*) }, ExprSeq(args)) =>
+        val errors = List.newBuilder[Expr[(Int, Int, String)]]
+        val (xmlStr, offsets) = encode(parts)
+        implicit val arguments: Seq[Expr[Any]] = args
+        implicit val reporter: Reporter = new Reporter {
+          import reflect._
+
+          def error(msg: String, idx: Int): Unit = {
+            val (part, offset) = Reporter.from(idx, offsets, parts)
+            val pos = part.unseal.pos
+            val (srcF, start) = (pos.sourceFile, pos.start)
+            errors += '{ Tuple3(${start + offset}, ${start + offset + 1}, $msg) }
+          }
+
+          def error(msg: String, expr: Expr[Any]): Unit = {
+            val pos = expr.unseal.pos
+            errors += '{ Tuple3(${pos.start}, ${pos.end}, $msg) }
+          }
+        }
+        implCore(xmlStr)
+        errors.result().toExprOfList
     }
   }
 
