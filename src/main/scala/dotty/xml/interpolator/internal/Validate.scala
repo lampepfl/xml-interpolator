@@ -15,7 +15,7 @@ object Validate {
       case Elem(_, attributes, _, children) =>
         attributes
           .groupBy(_.name)
-          .collect { case (_, attributes) if attributes.size > 1 => attributes.head }
+          .collect { case (_, attributes) if attributes.size > 1 => attributes.tail.head }
           .foreach { attribute => reporter.error(s"attribute ${attribute.name} may only be defined once", attribute.pos )}
         validate(children)
       case _ =>
