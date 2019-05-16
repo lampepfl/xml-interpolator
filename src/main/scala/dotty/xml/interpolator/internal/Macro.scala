@@ -35,10 +35,10 @@ object Macro {
     }
   }
 
-  def implErrors(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[Any]]) given (reflect: Reflection): Expr[List[(Int, Int, String)]] = {
+  def implErrors(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[Any]]) given (reflect: Reflection): Expr[List[(Int, String)]] = {
     ((strCtxExpr, argsExpr): @unchecked) match {
       case ('{ StringContext(${ExprSeq(parts)}: _*) }, ExprSeq(args)) =>
-        val errors = List.newBuilder[Expr[(Int, Int, String)]]
+        val errors = List.newBuilder[Expr[(Int, String)]]
         val (xmlStr, offsets) = encode(parts)
         val scope = '{ _root_.scala.xml.TopScope }
         implicit val ctx: XmlContext = new XmlContext(args, scope)
@@ -47,12 +47,12 @@ object Macro {
 
           def error(msg: String, idx: Int): Unit = {
             val (_, offset) = Reporter.from(idx, offsets, parts)
-            errors += '{ Tuple3(${offset}, ${offset + 1}, $msg) }
+            errors += '{ Tuple2(${offset}, $msg) }
           }
 
           def error(msg: String, expr: Expr[Any]): Unit = {
             val pos = expr.unseal.pos
-            errors += '{ Tuple3(${pos.start}, ${pos.end}, $msg) }
+            errors += '{ Tuple2(${pos.start}, $msg) }
           }
         }
         implCore(xmlStr)
