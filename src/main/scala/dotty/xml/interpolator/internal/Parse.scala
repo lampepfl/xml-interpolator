@@ -177,10 +177,10 @@ object Parse extends JavaTokenParsers with TokenTests {
   private def Comment: Parser[Tree.Node] = positioned("<!--" ~> CommentText <~ "-->" ^^ { case text => Tree.Comment(text) })
   private def CommentText = (not("-->") ~> Char).*.map(_.mkString)
 
-  private def S = acceptIf(isSpace)(_ => "whitespace")
+  private def S = acceptIf(isSpace)(c => s"unexpected '${c}' found")
 
   private def Name = NameStart ~ (NameChar).* ^^ { case char ~ chars => (char :: chars).mkString }
-  private def NameStart = acceptIf(isNameStart)(_ => "NameStart")
+  private def NameStart = acceptIf(isNameStart)(c => s"'_' or a letter expected but '$c' found")
   private def NameChar  = acceptIf(isNameChar)(_ => "NameChar")
 
   private def Eq = S.? ~ "=" ~ S.?
