@@ -29,7 +29,7 @@ object TypeCheck {
               }
               if (!expected.exists(term.tpe <:< _)) {
                 the[Reporter].error(
-                  """type mismatch;
+                  s"""type mismatch;
                     | found   : ${term.tpe.widen.show}
                     | required: ${expected.map(_.show).mkString(" | ")}
                   """.stripMargin, term.seal)
