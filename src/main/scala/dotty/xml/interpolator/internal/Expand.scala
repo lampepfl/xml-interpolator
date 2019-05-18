@@ -12,12 +12,12 @@ object Expand {
 
   implicit val toolbox: scala.quoted.Toolbox = scala.quoted.Toolbox.make(this.getClass.getClassLoader)
 
-  def apply(nodes: Seq[Node]) given XmlContext, Reflection: Expr[xml.Node | xml.NodeBuffer] = {
+  def apply(nodes: Seq[Node])(implicit ctx: XmlContext, reflect: Reflection): Expr[xml.Node | xml.NodeBuffer] = {
     if (nodes.size == 1) liftNode(nodes.head).asInstanceOf[Expr[scala.xml.Node]]
     else liftNodes(nodes)
   }
 
-  private def liftNode(node: Node) given XmlContext, Reflection = {
+  private def liftNode(node: Node)(implicit ctx: XmlContext, reflect: Reflection) = {
     node match {
       case group: Group             => liftGroup(group)
       case elem: Elem               => liftElem(elem)
@@ -31,29 +31,29 @@ object Expand {
     }
   }
 
-  private def liftNodes(nodes: Seq[Node]) given XmlContext, Reflection: Expr[scala.xml.NodeBuffer] = {
+  private def liftNodes(nodes: Seq[Node])(implicit ctx: XmlContext, reflect: Reflection): Expr[scala.xml.NodeBuffer] = {
     nodes.foldLeft('{ new _root_.scala.xml.NodeBuffer() })((expr, node) => '{ $expr &+ ${liftNode(node)} } )
   }
 
-  private def liftGroup(group: Group) given XmlContext, Reflection = '{
+  private def liftGroup(group: Group)(implicit ctx: XmlContext, reflect: Reflection) = '{
     new _root_.scala.xml.Group(${liftNodes(group.nodes)})
   }
 
-  private def liftElem(elem: Elem) given XmlContext, Reflection = {
+  private def liftElem(elem: Elem)(implicit ctx: XmlContext, reflect: Reflection) = {
     val (namespaces, attributes) = elem.attributes.partition(_.isNamespace)
     val prefix = if (elem.prefix.nonEmpty) elem.prefix.toExpr else '{ null: String }
     val label = elem.label.toExpr
     val attributes1 = liftAttributes(attributes)
     val scope = liftNamespaces(namespaces)
     val empty = elem.empty.toExpr
-    val child = liftNodes(elem.children)
+    val child = liftNodes(elem.children)(new XmlContext(ctx.args, scope), reflect)
     if (elem.children.isEmpty)
       '{ new _root_.scala.xml.Elem($prefix, $label, $attributes1, $scope, $empty) }
     else
       '{ new _root_.scala.xml.Elem($prefix, $label, $attributes1, $scope, $empty, $child: _*) }
   }
 
-  private def liftAttributes(attributes: Seq[Attribute]) given XmlContext given (reflect: Reflection): Expr[scala.xml.MetaData] = {
+  private def liftAttributes(attributes: Seq[Attribute])(implicit ctx: XmlContext, reflect: Reflection): Expr[scala.xml.MetaData] = {
     import reflect._
     attributes.foldRight('{ _root_.scala.xml.Null }: Expr[scala.xml.MetaData])((attribute, rest) => {
       val value = attribute.value match {
@@ -77,7 +77,7 @@ object Expand {
     })
   }
 
-  private def liftNamespaces(namespaces: Seq[Attribute]) given (ctx: XmlContext) given (reflect: Reflection): Expr[scala.xml.NamespaceBinding] = {
+  private def liftNamespaces(namespaces: Seq[Attribute])(implicit ctx: XmlContext, reflect: Reflection): Expr[scala.xml.NamespaceBinding] = {
     import reflect._
     namespaces.foldLeft(ctx.scope)((rest, namespace) => {
       val prefix = if (namespace.prefix.nonEmpty) namespace.key.toExpr else '{ null: String }
@@ -97,7 +97,7 @@ object Expand {
     new _root_.scala.xml.Comment(${comment.text.toExpr})
   }
   
-  private def liftPlaceholder(placeholder: Placeholder) given (ctx: XmlContext) = {
+  private def liftPlaceholder(placeholder: Placeholder)(implicit ctx: XmlContext) = {
     ctx.args(placeholder.id).apply(ctx.scope)
   }
   
