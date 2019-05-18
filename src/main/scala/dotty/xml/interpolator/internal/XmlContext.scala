@@ -1,5 +1,6 @@
-package dotty.xml.interpolator.internal
+package dotty.xml.interpolator
+package internal
 
 import scala.quoted._
 
-class XmlContext(val args: Seq[Expr[Any]], val scope: Expr[scala.xml.NamespaceBinding])
+class XmlContext(val args: Seq[Expr[given Scope => Any]], val scope: Expr[scala.xml.NamespaceBinding])
