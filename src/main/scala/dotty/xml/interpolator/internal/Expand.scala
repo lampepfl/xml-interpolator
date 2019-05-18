@@ -97,8 +97,8 @@ object Expand {
     new _root_.scala.xml.Comment(${comment.text.toExpr})
   }
   
-  private def liftPlaceholder(placeholder: Placeholder) given XmlContext = {
-    the[XmlContext].args(placeholder.id).apply(the[XmlContext].scope)
+  private def liftPlaceholder(placeholder: Placeholder) given (ctx: XmlContext) = {
+    ctx.args(placeholder.id).apply(ctx.scope)
   }
   
   private def liftPCData(pcdata: PCData) = '{
