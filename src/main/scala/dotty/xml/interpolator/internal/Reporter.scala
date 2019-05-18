@@ -2,8 +2,6 @@ package dotty.xml.interpolator
 package internal
 
 import scala.quoted._
-import scala.quoted.matching._
-import scala.tasty.Reflection._
 
 trait Reporter {
   def error(msg: String, idx: Int): Unit
