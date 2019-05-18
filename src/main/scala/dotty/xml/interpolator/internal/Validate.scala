@@ -1,4 +1,5 @@
-package dotty.xml.interpolator.internal
+package dotty.xml.interpolator
+package internal
 
 import scala.language.implicitConversions
 

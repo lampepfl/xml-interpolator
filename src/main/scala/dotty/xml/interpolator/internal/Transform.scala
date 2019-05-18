@@ -1,4 +1,5 @@
-package dotty.xml.interpolator.internal
+package dotty.xml.interpolator
+package internal
 
 object Transform {
   def apply(nodes: Seq[Tree.Node]): Seq[Tree.Node] = {

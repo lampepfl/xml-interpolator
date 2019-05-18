@@ -1,4 +1,5 @@
-package dotty.xml.interpolator.internal
+package dotty.xml.interpolator
+package internal
 
 import scala.quoted._
 import scala.quoted.matching._
