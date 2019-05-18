@@ -1,4 +1,5 @@
-package dotty.xml.interpolator.internal
+package dotty.xml.interpolator
+package internal
 
 import scala.language.implicitConversions
 import scala.quoted._
@@ -97,7 +98,7 @@ object Expand {
   }
   
   private def liftPlaceholder(placeholder: Placeholder) given XmlContext = {
-    the[XmlContext].args(placeholder.id)
+    the[XmlContext].args(placeholder.id).apply(the[XmlContext].scope)
   }
   
   private def liftPCData(pcdata: PCData) = '{
