@@ -11,11 +11,10 @@ import scala.language.implicitConversions
 
 object Macro {
 
-  def impl(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[Any]]) given (reflect: Reflection): Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
+  def impl(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[given Scope => Any]], scope: Expr[Scope]) given (reflect: Reflection): Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
     ((strCtxExpr, argsExpr): @unchecked) match {
       case ('{ StringContext(${ExprSeq(parts)}: _*) }, ExprSeq(args)) =>
         val (xmlStr, offsets) = encode(parts)
-        val scope = '{ _root_.scala.xml.TopScope }
         implicit val ctx: XmlContext = new XmlContext(args, scope)
         implicit val reporter: Reporter = new Reporter {
           import reflect._
@@ -34,7 +33,7 @@ object Macro {
         implCore(xmlStr)
     }
   }
-
+/*
   def implErrors(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[Any]]) given (reflect: Reflection): Expr[List[(Int, String)]] = {
     ((strCtxExpr, argsExpr): @unchecked) match {
       case ('{ StringContext(${ExprSeq(parts)}: _*) }, ExprSeq(args)) =>
@@ -59,7 +58,7 @@ object Macro {
         errors.result().toExprOfList
     }
   }
-
+*/
   private def implCore(xmlStr: String) given XmlContext, Reporter, Reflection: Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
 
     import Parse.{apply => parse}
