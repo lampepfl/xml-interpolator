@@ -1,7 +1,6 @@
 package dotty.xml.interpolator
 package internal
 
-import scala.collection.mutable.ListBuffer
 import scala.util.parsing.input._
 
 object Tree {
