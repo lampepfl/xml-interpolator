@@ -3,7 +3,6 @@ package internal
 
 import scala.language.implicitConversions
 import scala.quoted._
-import scala.quoted.Exprs.LiftedExpr
 import scala.tasty.Reflection
 
 import dotty.xml.interpolator.internal.Tree._
@@ -13,71 +12,70 @@ object Expand {
   implicit val toolbox: scala.quoted.Toolbox = scala.quoted.Toolbox.make(this.getClass.getClassLoader)
 
   def apply(nodes: Seq[Node])(implicit ctx: XmlContext, reflect: Reflection): Expr[xml.Node | xml.NodeBuffer] = {
-    if (nodes.size == 1) liftNode(nodes.head).asInstanceOf[Expr[scala.xml.Node]]
-    else liftNodes(nodes)
+    if (nodes.size == 1) expandNode(nodes.head).asInstanceOf[Expr[scala.xml.Node]]
+    else expandNodes(nodes)
   }
 
-  private def liftNode(node: Node)(implicit ctx: XmlContext, reflect: Reflection) = {
+  private def expandNode(node: Node)(implicit ctx: XmlContext, reflect: Reflection) = {
     node match {
-      case group: Group             => liftGroup(group)
-      case elem: Elem               => liftElem(elem)
-      case text: Text               => liftText(text)
-      case comment: Comment         => liftComment(comment)
-      case placeholder: Placeholder => liftPlaceholder(placeholder)
-      case pcData: PCData           => liftPCData(pcData)
-      case procInstr: ProcInstr     => liftProcInstr(procInstr)
-      case entityRef: EntityRef     => liftEntityRef(entityRef)
-      case unparsed: Unparsed       => liftUnparsed(unparsed)
+      case group: Group             => expandGroup(group)
+      case elem: Elem               => expandElem(elem)
+      case text: Text               => expandText(text)
+      case comment: Comment         => expandComment(comment)
+      case placeholder: Placeholder => expandPlaceholder(placeholder)
+      case pcData: PCData           => expandPCData(pcData)
+      case procInstr: ProcInstr     => expandProcInstr(procInstr)
+      case entityRef: EntityRef     => expandEntityRef(entityRef)
+      case unparsed: Unparsed       => expandUnparsed(unparsed)
     }
   }
 
-  private def liftNodes(nodes: Seq[Node])(implicit ctx: XmlContext, reflect: Reflection): Expr[scala.xml.NodeBuffer] = {
-    nodes.foldLeft('{ new _root_.scala.xml.NodeBuffer() })((expr, node) => '{ $expr &+ ${liftNode(node)} } )
+  private def expandNodes(nodes: Seq[Node])(implicit ctx: XmlContext, reflect: Reflection): Expr[scala.xml.NodeBuffer] = {
+    nodes.foldLeft('{ new _root_.scala.xml.NodeBuffer() })((expr, node) => '{ $expr &+ ${expandNode(node)} } )
   }
 
-  private def liftGroup(group: Group)(implicit ctx: XmlContext, reflect: Reflection) = '{
-    new _root_.scala.xml.Group(${liftNodes(group.nodes)})
-  }
+  private def expandGroup(group: Group)(implicit ctx: XmlContext, reflect: Reflection) =
+    '{ new _root_.scala.xml.Group(${expandNodes(group.nodes)}) }
 
-  private def liftElem(elem: Elem)(implicit ctx: XmlContext, reflect: Reflection) = {
+  private def expandElem(elem: Elem)(implicit ctx: XmlContext, reflect: Reflection) = {
     val (namespaces, attributes) = elem.attributes.partition(_.isNamespace)
     val prefix = if (elem.prefix.nonEmpty) elem.prefix.toExpr else '{ null: String }
     val label = elem.label.toExpr
-    val attributes1 = liftAttributes(attributes)
-    val scope = liftNamespaces(namespaces)
+    val attributes1 = expandAttributes(attributes)
+    val scope = expandNamespaces(namespaces)
     val empty = elem.empty.toExpr
-    val child = liftNodes(elem.children)(new XmlContext(ctx.args, scope), reflect)
+    val child = expandNodes(elem.children)(new XmlContext(ctx.args, scope), reflect)
     if (elem.children.isEmpty)
       '{ new _root_.scala.xml.Elem($prefix, $label, $attributes1, $scope, $empty) }
     else
       '{ new _root_.scala.xml.Elem($prefix, $label, $attributes1, $scope, $empty, $child: _*) }
   }
 
-  private def liftAttributes(attributes: Seq[Attribute])(implicit ctx: XmlContext, reflect: Reflection): Expr[scala.xml.MetaData] = {
+  private def expandAttributes(attributes: Seq[Attribute])(implicit ctx: XmlContext, reflect: Reflection): Expr[scala.xml.MetaData] = {
     import reflect._
     attributes.foldRight('{ _root_.scala.xml.Null }: Expr[scala.xml.MetaData])((attribute, rest) => {
       val value = attribute.value match {
-          case Seq(v) => liftNode(v)
-          case vs     => liftNodes(vs)
+          case Seq(v) => expandNode(v)
+          case vs     => expandNodes(vs)
       }
       val term = value.unseal
       if (term.tpe <:< '[String].unseal.tpe) {
-        val v = term.seal.cast[String]
-        if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $v, $rest) }
-        else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $v, $rest) }
+        val value = term.seal.cast[String]
+        if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $value, $rest) }
+        else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $value, $rest) }
       } else if (term.tpe <:< '[Seq[scala.xml.Node]].unseal.tpe) {
-        val v = term.seal.cast[Seq[scala.xml.Node]]
-        if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $v, $rest) }
-        else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $v, $rest) }
+        val value = term.seal.cast[Seq[scala.xml.Node]]
+        if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $value, $rest) }
+        else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $value, $rest) }
       } else {
-        val v = term.seal.cast[Option[Seq[scala.xml.Node]]]
-        if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $v, $rest) }
-        else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $v, $rest) }
+        val value = term.seal.cast[Option[Seq[scala.xml.Node]]]
+        if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $value, $rest) }
+        else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $value, $rest) }
       }
     })
   }
 
-  private def liftNamespaces(namespaces: Seq[Attribute])(implicit ctx: XmlContext, reflect: Reflection): Expr[scala.xml.NamespaceBinding] = {
+  private def expandNamespaces(namespaces: Seq[Attribute])(implicit ctx: XmlContext, reflect: Reflection): Expr[scala.xml.NamespaceBinding] = {
     import reflect._
     namespaces.foldLeft(ctx.scope)((rest, namespace) => {
       val prefix = if (namespace.prefix.nonEmpty) namespace.key.toExpr else '{ null: String }
@@ -89,31 +87,25 @@ object Expand {
     })
   }
   
-  private def liftText(text: Text) = '{
-    new _root_.scala.xml.Text(${text.text.toExpr})
-  }
+  private def expandText(text: Text) =
+    '{ new _root_.scala.xml.Text(${text.text.toExpr}) }
   
-  private def liftComment(comment: Comment) = '{
-    new _root_.scala.xml.Comment(${comment.text.toExpr})
-  }
+  private def expandComment(comment: Comment) =
+    '{ new _root_.scala.xml.Comment(${comment.text.toExpr}) }
   
-  private def liftPlaceholder(placeholder: Placeholder)(implicit ctx: XmlContext) = {
+  private def expandPlaceholder(placeholder: Placeholder)(implicit ctx: XmlContext) = {
     ctx.args(placeholder.id).apply(ctx.scope)
   }
+
+  private def expandPCData(pcdata: PCData) =
+    '{ new _root_.scala.xml.PCData(${pcdata.data.toExpr}) }
   
-  private def liftPCData(pcdata: PCData) = '{
-    new _root_.scala.xml.PCData(${pcdata.data.toExpr})
-  }
+  private def expandProcInstr(instr: ProcInstr) =
+    '{ new _root_.scala.xml.ProcInstr(${instr.target.toExpr}, ${instr.proctext.toExpr}) }
   
-  private def liftProcInstr(instr: ProcInstr) = '{
-    new _root_.scala.xml.ProcInstr(${instr.target.toExpr}, ${instr.proctext.toExpr})
-  }
+  private def expandEntityRef(ref: EntityRef) =
+    '{ new _root_.scala.xml.EntityRef(${ref.name.toExpr}) }
   
-  private def liftEntityRef(ref: EntityRef) = '{
-    new _root_.scala.xml.EntityRef(${ref.name.toExpr})
-  }
-  
-  private def liftUnparsed(unparsed: Unparsed) = '{
-    new _root_.scala.xml.Unparsed(${unparsed.data.toExpr})
-  }
+  private def expandUnparsed(unparsed: Unparsed) =
+    '{ new _root_.scala.xml.Unparsed(${unparsed.data.toExpr}) }
 }
