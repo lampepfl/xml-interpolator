@@ -203,62 +203,62 @@ class ReporterTest {
   }
 
   @Test def placeholder1(): Unit = {
-    assertEquals(xml"<foo>${}", List(8, "'</' expected but end of source found"))
+    assertEquals(xml"<foo>${}", List((8, "'</' expected but end of source found")))
   }
 
   @Test def placeholder2(): Unit = {
-    assertEquals(xml"<foo>${1 + 2}", List(13, "'</' expected but end of source found"))
+    assertEquals(xml"<foo>${1 + 2}", List((13, "'</' expected but end of source found")))
   }
 
   @Test def placeholder3(): Unit = {
-    assertEquals(xml"<foo>${1 + 2}<bar/>", List(19, "'</' expected but end of source found"))
+    assertEquals(xml"<foo>${1 + 2}<bar/>", List((19, "'</' expected but end of source found")))
   }
 
   @Test def placeholder4(): Unit = {
-    assertEquals(xml"<foo>${1 + 2}${true}", List(20, "'</' expected but end of source found"))
+    assertEquals(xml"<foo>${1 + 2}${true}", List((20, "'</' expected but end of source found")))
   }
 
   @Test def placeholder5(): Unit = {
-    assertEquals(xml"<foo>${1 + 2} ${true}", List(21, "'</' expected but end of source found"))
+    assertEquals(xml"<foo>${1 + 2} ${true}", List((21, "'</' expected but end of source found")))
   }
 
   @Test def placeholder6(): Unit = {
-    assertEquals(xml"<foo>${1 + 2}${true}<bar/>", List(26, "'</' expected but end of source found"))
+    assertEquals(xml"<foo>${1 + 2}${true}<bar/>", List((26, "'</' expected but end of source found")))
   }
 
   @Test def placeholder7(): Unit = {
-    assertEquals(xml"<foo>${1 + 2}<bar/>${true}", List(26, "'</' expected but end of source found"))
+    assertEquals(xml"<foo>${1 + 2}<bar/>${true}", List((26, "'</' expected but end of source found")))
   }
 
   @Test def placeholder8(): Unit = {
-    assertEquals(xml"<foo>${1 + 2}<bar/>${true}<!--baz-->", List(36, "'</' expected but end of source found"))
+    assertEquals(xml"<foo>${1 + 2}<bar/>${true}<!--baz-->", List((36, "'</' expected but end of source found")))
   }
 
   @Test def placeholder9(): Unit = {
-    assertEquals(xml"""<foo bar=${"baz"}>""", List(18, "'</' expected but end of source found"))
+    assertEquals(xml"""<foo bar=${"baz"}>""", List((18, "'</' expected but end of source found")))
   }
 
   @Test def placeholder10(): Unit = {
-    assertEquals(xml"""<foo bar=${"baz"}> """, List(19, "'</' expected but end of source found"))
+    assertEquals(xml"""<foo bar=${"baz"}> """, List((19, "'</' expected but end of source found")))
   }
 
   @Test def placeholder11(): Unit = {
-    assertEquals(xml"""<foo bar=${"baz"}><!--qux-->""", List(28, "'</' expected but end of source found"))
+    assertEquals(xml"""<foo bar=${"baz"}><!--qux-->""", List((28, "'</' expected but end of source found")))
   }
 
   @Test def placeholder12(): Unit = {
-    assertEquals(xml"""<foo bar=${"baz"}>${1 + 2}""", List(26, "'</' expected but end of source found"))
+    assertEquals(xml"""<foo bar=${"baz"}>${1 + 2}""", List((26, "'</' expected but end of source found")))
   }
 
   @Test def placeholder13(): Unit = {
-    assertEquals(xml"""<foo bar=${"baz"}>${1 + 2}<!--qux-->""", List(36, "'</' expected but end of source found"))
+    assertEquals(xml"""<foo bar=${"baz"}>${1 + 2}<!--qux-->""", List((36, "'</' expected but end of source found")))
   }
 
   @Test def placeholder14(): Unit = {
-    assertEquals(xml"""<foo bar=${"baz"}>${1 + 2}${true}<!--qux-->""", List(43, "'</' expected but end of source found"))
+    assertEquals(xml"""<foo bar=${"baz"}>${1 + 2}${true}<!--qux-->""", List((43, "'</' expected but end of source found")))
   }
 
   @Test def placeholder15(): Unit = {
-    assertEquals(xml"""<foo bar=${"baz"}>${1 + 2} ${true}<!--qux-->""", List(44, "'</' expected but end of source found"))
+    assertEquals(xml"""<foo bar=${"baz"}>${1 + 2} ${true}<!--qux-->""", List((44, "'</' expected but end of source found")))
   }
 }
