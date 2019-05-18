@@ -1,4 +1,5 @@
-package dotty.xml.interpolator.internal
+package dotty.xml.interpolator
+package internal
 
 import scala.quoted._
 import scala.tasty._
@@ -18,7 +19,9 @@ object TypeCheck {
         elem.attributes.foreach(attribute =>
           attribute.value match {
             case Seq(Placeholder(id)) =>
-              val term = the[XmlContext].args(id).unseal
+              val dummy = '{ _root_.scala.xml.TopScope }
+              val expr = the[XmlContext].args(id)
+              val term = expr.apply(dummy).unseal
               val expected = attribute.isNamespace match {
                 case true => Seq('[String].unseal.tpe)
                 case _ => Seq(
