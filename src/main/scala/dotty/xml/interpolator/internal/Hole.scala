@@ -1,4 +1,5 @@
-package dotty.xml.interpolator.internal
+package dotty.xml.interpolator
+package internal
 
 object Hole {
   val HoleStart = 0xE000.toChar.toString
