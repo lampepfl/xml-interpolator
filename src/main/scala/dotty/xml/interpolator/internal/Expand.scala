@@ -83,7 +83,7 @@ object Expand {
       val prefix = if (namespace.prefix.nonEmpty) namespace.key.toExpr else '{ null: String }
       val uri = (namespace.value.head: @unchecked) match {
         case Text(text) => text.toExpr
-        case Placeholder(id) => ctx.args(id).asInstanceOf[Expr[String]]
+        case Placeholder(id) => ctx.args(id).apply('{ _root_.scala.xml.TopScope }).asInstanceOf[Expr[String]]
       }
       '{ new _root_.scala.xml.NamespaceBinding($prefix, $uri, $rest) }
     })
