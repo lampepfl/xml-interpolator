@@ -182,7 +182,7 @@ object Parse extends JavaTokenParsers with TokenTests {
 
   private def Name = NameStart ~ (NameChar).* ^^ { case char ~ chars => (char :: chars).mkString }
   private def NameStart = acceptIf(isNameStart)(c => s"'_' or a letter expected but '$c' found")
-  private def NameChar  = acceptIf(isNameChar)(_ => "NameChar")
+  private def NameChar  = acceptIf(isNameChar)(c => s"unexpected '${c}' found")
 
   private def Eq = S.? ~ "=" ~ S.?
 
