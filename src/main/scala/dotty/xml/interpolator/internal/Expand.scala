@@ -16,7 +16,7 @@ object Expand {
     else expandNodes(nodes)
   }
 
-  private def expandNode(node: Node)(implicit ctx: XmlContext, reflect: Reflection) = {
+  private def expandNode(node: Node)(implicit ctx: XmlContext, reflect: Reflection): Expr[Any] = {
     node match {
       case group: Group             => expandGroup(group)
       case elem: Elem               => expandElem(elem)
@@ -34,10 +34,10 @@ object Expand {
     nodes.foldLeft('{ new _root_.scala.xml.NodeBuffer() })((expr, node) => '{ $expr &+ ${expandNode(node)} } )
   }
 
-  private def expandGroup(group: Group)(implicit ctx: XmlContext, reflect: Reflection) =
+  private def expandGroup(group: Group)(implicit ctx: XmlContext, reflect: Reflection): Expr[scala.xml.Group] =
     '{ new _root_.scala.xml.Group(${expandNodes(group.nodes)}) }
 
-  private def expandElem(elem: Elem)(implicit ctx: XmlContext, reflect: Reflection) = {
+  private def expandElem(elem: Elem)(implicit ctx: XmlContext, reflect: Reflection): Expr[scala.xml.Elem] = {
     val (namespaces, attributes) = elem.attributes.partition(_.isNamespace)
     val prefix = if (elem.prefix.nonEmpty) elem.prefix.toExpr else '{ null: String }
     val label = elem.label.toExpr
@@ -58,6 +58,21 @@ object Expand {
           case Seq(v) => expandNode(v)
           case vs     => expandNodes(vs)
       }
+
+      /*
+      value match {
+        case '{($value: String )} =>
+          if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $value, $rest) }
+          else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $value, $rest) }
+        case '{($value: Seq[scala.xml.Node])} =>
+          if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $value, $rest) }
+          else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $value, $rest) }
+        case '{($value: Option[Seq[scala.xml.Node]])} =>
+          if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $value, $rest) }
+          else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $value, $rest) }
+      }
+      */
+
       val term = value.unseal
       if (term.tpe <:< '[String].unseal.tpe) {
         val value = term.seal.cast[String]
@@ -87,25 +102,25 @@ object Expand {
     })
   }
   
-  private def expandText(text: Text) =
+  private def expandText(text: Text): Expr[scala.xml.Text] =
     '{ new _root_.scala.xml.Text(${text.text.toExpr}) }
   
-  private def expandComment(comment: Comment) =
+  private def expandComment(comment: Comment): Expr[scala.xml.Comment] =
     '{ new _root_.scala.xml.Comment(${comment.text.toExpr}) }
   
-  private def expandPlaceholder(placeholder: Placeholder)(implicit ctx: XmlContext) = {
+  private def expandPlaceholder(placeholder: Placeholder)(implicit ctx: XmlContext): Expr[Any] = {
     ctx.args(placeholder.id).apply(ctx.scope)
   }
 
-  private def expandPCData(pcdata: PCData) =
+  private def expandPCData(pcdata: PCData): Expr[scala.xml.PCData] =
     '{ new _root_.scala.xml.PCData(${pcdata.data.toExpr}) }
   
-  private def expandProcInstr(instr: ProcInstr) =
+  private def expandProcInstr(instr: ProcInstr): Expr[scala.xml.ProcInstr] =
     '{ new _root_.scala.xml.ProcInstr(${instr.target.toExpr}, ${instr.proctext.toExpr}) }
   
-  private def expandEntityRef(ref: EntityRef) =
+  private def expandEntityRef(ref: EntityRef): Expr[scala.xml.EntityRef] =
     '{ new _root_.scala.xml.EntityRef(${ref.name.toExpr}) }
   
-  private def expandUnparsed(unparsed: Unparsed) =
+  private def expandUnparsed(unparsed: Unparsed): Expr[scala.xml.Unparsed] =
     '{ new _root_.scala.xml.Unparsed(${unparsed.data.toExpr}) }
 }
