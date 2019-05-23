@@ -23,8 +23,8 @@ object Parse extends JavaTokenParsers with TokenTests {
   private def XmlExpr: Parser[Seq[Tree.Node]] = S.* ~> rep1sep(XmlContent, S.*) <~ S.*
 
   private def Element: Parser[Tree.Node] = positioned(
-      EmptyElemTag ^^ { case name ~ attributes => Tree.Elem(name, attributes, empty = true, Nil) }
-    | STag ~ Content <~ ETag ^^ { case name ~ attributes ~ children => Tree.Elem(name, attributes, empty = false, children) }
+      EmptyElemTag ^^ { case name ~ attributes => Tree.Elem(name, attributes, Nil, None) }
+    | STag ~ Content ~ ETag ^^ { case name ~ attributes ~ children ~ end => Tree.Elem(name, attributes, children, Some(end)) }
   )
   
   private def EmptyElemTag = "<" ~> Name ~ (S ~> Attribute).* <~ S.? <~ "/>" 
@@ -130,8 +130,8 @@ object Parse extends JavaTokenParsers with TokenTests {
   private def XmlPattern: Parser[Tree.Node] = ElemPattern
 
   private def ElemPattern: Parser[Tree.Node] = positioned(
-      EmptyElemP ^^ { case name => Tree.Elem(name, Nil, empty = true, Nil) }
-    | STagP ~ ContentP <~ ETagP ^^ { case name ~ children => Tree.Elem(name, Nil, empty = false, children) }
+      EmptyElemP ^^ { case name => Tree.Elem(name, Nil, Nil, None) }
+    | STagP ~ ContentP ~ ETagP ^^ { case name ~ children ~ end => Tree.Elem(name, Nil, children, Some(end)) }
   )
 
   private def EmptyElemP = "<" ~> Name <~ S.? ~ "/>"

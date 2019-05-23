@@ -43,7 +43,7 @@ object Expand {
     val label = elem.label.toExpr
     val attributes1 = expandAttributes(attributes)
     val scope = expandNamespaces(namespaces)
-    val empty = elem.empty.toExpr
+    val empty = elem.end.isEmpty.toExpr
     val child = expandNodes(elem.children)(new XmlContext(ctx.args, scope), reflect)
     if (elem.children.isEmpty)
       '{ new _root_.scala.xml.Elem($prefix, $label, $attributes1, $scope, $empty) }
