@@ -6,7 +6,7 @@ import scala.util.parsing.input._
 object Tree {
   sealed abstract class Node extends Positional
   final case class Group(nodes: Seq[Node]) extends Node
-  final case class Elem(name: String, attributes: Seq[Attribute], empty: Boolean, children: Seq[Node]) extends Node {
+  final case class Elem(name: String, attributes: Seq[Attribute], children: Seq[Node], end: Option[String]) extends Node {
     def prefix: String = name.take(prefixEnd)
     def label:  String = name.drop(prefixEnd + 1)
     private def prefixEnd = name.indexOf(':')

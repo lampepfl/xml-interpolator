@@ -50,6 +50,14 @@ class ReporterTest {
     assertEquals(xml"<foo>", List((5, "'</' expected but end of source found")))
   }
 
+  @Test def elem7(): Unit = {
+    assertEquals(xml"<foo></bar>", List((0, "closing tag `foo` expected but `bar` found")))
+  }
+
+  @Test def elem8(): Unit = {
+    assertEquals(xml"<foo><bar></baz></foo>", List((5, "closing tag `bar` expected but `baz` found")))
+  }
+
   @Test def attribute1(): Unit = {
     assertEquals(xml"<foo bar", List((8, "'=' expected but end of source found")))
   }
@@ -115,7 +123,7 @@ class ReporterTest {
   }
 
   @Test def attribute19(): Unit = {
-    assertEquals(xml"<foo bar='' bar=''/>", List((12, "attribute bar may only be defined once")))
+    assertEquals(xml"<foo bar='' bar=''/>", List((12, "attribute `bar` may only be defined once")))
   }
 
   @Test def pcData1(): Unit = {
