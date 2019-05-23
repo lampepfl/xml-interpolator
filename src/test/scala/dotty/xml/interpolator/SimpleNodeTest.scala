@@ -82,8 +82,7 @@ class SimpleNodeTest {
   }
 
   @Test def entityRef8(): Unit = {
-    // assert(xml"""<foo a="Hello &name;!"/>""" ≈ <foo a="Hello &name;!"/>)
-    fail
+    assert(xml"""<foo a="Hello &name;!"/>""" ≈ <foo a="Hello &name;!"/>)
   }
 
   @Test def entityRef9(): Unit = {

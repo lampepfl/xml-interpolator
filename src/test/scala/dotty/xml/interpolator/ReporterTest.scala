@@ -98,11 +98,6 @@ class ReporterTest {
     assertEquals(xml"<foo bar='&#1,23;'/>", List((13, "';' expected but ',' found")))
   }
 
-  @Test def attribute13(): Unit = {
-    // assertEquals(xml"<foo bar='&#1234567890123456789;'/>", List((0, "")))
-    fail
-  }
-
   @Test def attribute14(): Unit = {
     assertEquals(xml"<foo bar='&#x'/>", List((13, "';' expected but ''' found")))
   }
@@ -117,11 +112,6 @@ class ReporterTest {
 
   @Test def attribute17(): Unit = {
     assertEquals(xml"<foo bar='&#x123baz;'/>", List((18, "';' expected but 'z' found")))
-  }
-
-  @Test def attribute18(): Unit = {
-    // assertEquals(xml"<foo bar='&#x123ABCDEF;'/>", List((0, "")))
-    fail
   }
 
   @Test def attribute19(): Unit = {
@@ -180,11 +170,6 @@ class ReporterTest {
     assertEquals(xml"<foo>&#123bar;</foo>", List((10, "';' expected but 'b' found")))
   }
 
-  @Test def reference5(): Unit = {
-    // assertEquals(xml"<foo>&#1234567890123456789;</foo>", List((0, "")))
-    fail
-  }
-
   @Test def reference6(): Unit = {
     assertEquals(xml"<foo>&#x</foo>", List((8, "';' expected but '<' found")))
   }
@@ -195,11 +180,6 @@ class ReporterTest {
 
   @Test def reference8(): Unit = {
     assertEquals(xml"<foo>&#x123bar;</foo>", List((13, "';' expected but 'r' found")))
-  }
-
-  @Test def reference9(): Unit = {
-    // assertEquals(xml"<foo>&#x123ABCDEF;</foo>", List((0, "")))
-    fail
   }
 
   @Test def placeholder1(): Unit = {
