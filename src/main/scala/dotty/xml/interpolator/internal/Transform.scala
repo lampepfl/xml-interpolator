@@ -8,8 +8,8 @@ object Transform {
     nodes.map {
       case elem : Elem =>
         val children = apply(elem.children)
-        if (elem.name == "xml:group" && !elem.empty) Group(elem.children).setPos(elem.pos)
-        else elem.copy(children = children)
+        if (elem.name == "xml:group" && !elem.end.isEmpty) Group(elem.children).setPos(elem.pos)
+        else elem.copy(children = children).setPos(elem.pos)
       case node => node
     }
   }
