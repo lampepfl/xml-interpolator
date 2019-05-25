@@ -5,10 +5,8 @@ import org.junit.Assert._
 
 class ReporterTest {
 
-  implicit object StringContextOps {
-    inline def (ctx: => StringContext) xml (args: => (given Scope => Any)*) given Scope <: Any =
-      ${ dotty.xml.interpolator.internal.Macro.implErrors('ctx, 'args, '{implicitly[Scope]}) }
-  }
+  inline def (ctx: => StringContext) xml (args: => (given Scope => Any)*) given Scope <: Any =
+    ${ dotty.xml.interpolator.internal.Macro.implErrors('ctx, 'args, '{implicitly[Scope]}) }
 
   @Test def empty1(): Unit = {
     assertEquals(xml"", List((0, "'<' expected but end of source found")))

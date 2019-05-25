@@ -11,7 +11,7 @@ object Expand {
 
   implicit val toolbox: scala.quoted.Toolbox = scala.quoted.Toolbox.make(this.getClass.getClassLoader)
 
-  def apply(nodes: Seq[Node])(implicit ctx: XmlContext, reflect: Reflection): Expr[xml.Node | xml.NodeBuffer] = {
+  def apply(nodes: Seq[Node])(implicit ctx: XmlContext, reflect: Reflection): Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
     if (nodes.size == 1) expandNode(nodes.head).asInstanceOf[Expr[scala.xml.Node]]
     else expandNodes(nodes)
   }
