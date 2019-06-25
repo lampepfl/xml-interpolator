@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/lampepfl/dotty-xml-interpolator.svg?branch=master)](https://travis-ci.org/lampepfl/dotty-xml-interpolator)
+[![Build Status](https://travis-ci.org/lampepfl/xml-interpolator.svg?branch=master)](https://travis-ci.org/lampepfl/xml-interpolator)
 
 # XML interpolator
 
