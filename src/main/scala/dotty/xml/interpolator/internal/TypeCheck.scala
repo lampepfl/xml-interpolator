@@ -2,18 +2,17 @@ package dotty.xml.interpolator
 package internal
 
 import scala.quoted._
-import scala.tasty._
 
 import dotty.xml.interpolator.internal.Tree._
 
 object TypeCheck {
-  def apply(nodes: Seq[Node]) given XmlContext, Reporter, Reflection: Seq[Node] = {
+  def apply(nodes: Seq[Node]) given XmlContext, Reporter, QuoteContext: Seq[Node] = {
     typecheck(nodes)
     nodes
   }
 
-  private def typecheck(nodes: Seq[Node]) given XmlContext, Reporter given (reflect: Reflection): Unit = {
-    import reflect._
+  private def typecheck(nodes: Seq[Node]) given XmlContext, Reporter given (qctx: QuoteContext): Unit = {
+    import qctx.tasty._
     nodes.foreach {
       case elem : Elem =>
         elem.attributes.foreach(attribute =>
