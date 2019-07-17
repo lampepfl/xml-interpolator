@@ -3,7 +3,7 @@ package dotty.xml.interpolator
 import org.junit.Test
 import org.junit.Assert._
 
-import scala.testing._
+import scala.compiletime.testing._
 
 class InterpolationTest {
 
