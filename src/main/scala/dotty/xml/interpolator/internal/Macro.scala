@@ -4,44 +4,43 @@ package internal
 import scala.quoted._
 import scala.quoted.autolift._
 import scala.quoted.matching._
-import scala.tasty.Reflection
 
 import scala.collection.mutable.ArrayBuffer
 import scala.language.implicitConversions
 
 object Macro {
 
-  def impl(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[given Scope => Any]], scope: Expr[Scope]) given (reflect: Reflection): Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
+  def impl(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[given Scope => Any]], scope: Expr[Scope]) given (qctx: QuoteContext): Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
     ((strCtxExpr, argsExpr): @unchecked) match {
       case ('{ StringContext(${ExprSeq(parts)}: _*) }, ExprSeq(args)) =>
         val (xmlStr, offsets) = encode(parts)
         implicit val ctx: XmlContext = new XmlContext(args, scope)
         implicit val reporter: Reporter = new Reporter {
-          import reflect._
+          import qctx.tasty._
 
           def error(msg: String, idx: Int): Unit = {
             val (part, offset) = Reporter.from(idx, offsets, parts)
             val pos = part.unseal.pos
             val (srcF, start) = (pos.sourceFile, pos.start)
-            reflect.error(msg, srcF, start + offset, start + offset + 1)
+            qctx.tasty.error(msg, srcF, start + offset, start + offset + 1)
           }
 
           def error(msg: String, expr: Expr[Any]): Unit = {
-            reflect.error(msg, expr.unseal.pos)
+            qctx.tasty.error(msg, expr.unseal.pos)
           }
         }
         implCore(xmlStr)
     }
   }
 
-  def implErrors(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[given Scope => Any]], scope: Expr[Scope]) given (reflect: Reflection): Expr[List[(Int, String)]] = {
+  def implErrors(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[given Scope => Any]], scope: Expr[Scope]) given (qctx: QuoteContext): Expr[List[(Int, String)]] = {
     ((strCtxExpr, argsExpr): @unchecked) match {
       case ('{ StringContext(${ExprSeq(parts)}: _*) }, ExprSeq(args)) =>
         val errors = List.newBuilder[Expr[(Int, String)]]
         val (xmlStr, offsets) = encode(parts)
         implicit val ctx: XmlContext = new XmlContext(args, scope)
         implicit val reporter: Reporter = new Reporter {
-          import reflect._
+          import qctx.tasty._
 
           def error(msg: String, idx: Int): Unit = {
             val (part, offset) = Reporter.from(idx, offsets, parts)
@@ -59,7 +58,7 @@ object Macro {
     }
   }
 
-  private def implCore(xmlStr: String) given XmlContext, Reporter, Reflection: Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
+  private def implCore(xmlStr: String) given XmlContext, Reporter, QuoteContext: Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
 
     import Parse.{apply => parse}
     import Transform.{apply => transform}
@@ -78,7 +77,7 @@ object Macro {
     interpolate(xmlStr)
   }
 
-  private def encode(parts: Seq[Expr[String]]) given Reflection: (String, Array[Int]) = {
+  private def encode(parts: Seq[Expr[String]]) given QuoteContext: (String, Array[Int]) = {
     val sb = new StringBuilder()
     val bf = ArrayBuffer.empty[Int]
 
