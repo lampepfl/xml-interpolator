@@ -25,8 +25,8 @@ object TypeCheck {
                 case true => Seq('[String].unseal.tpe)
                 case _ => Seq(
                   '[String].unseal.tpe,
-                  '[Seq[scala.xml.Node]].unseal.tpe,
-                  '[Option[Seq[scala.xml.Node]]].unseal.tpe
+                  '[collection.Seq[scala.xml.Node]].unseal.tpe,
+                  '[Option[collection.Seq[scala.xml.Node]]].unseal.tpe
                 )
               }
               if (!expected.exists(term.tpe <:< _)) {

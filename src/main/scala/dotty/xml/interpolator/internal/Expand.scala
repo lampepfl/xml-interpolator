@@ -75,12 +75,12 @@ object Expand {
         val value = term.seal.cast[String]
         if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $value, $rest) }
         else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $value, $rest) }
-      } else if (term.tpe <:< '[Seq[scala.xml.Node]].unseal.tpe) {
-        val value = term.seal.cast[Seq[scala.xml.Node]]
+      } else if (term.tpe <:< '[collection.Seq[scala.xml.Node]].unseal.tpe) {
+        val value = term.seal.cast[collection.Seq[scala.xml.Node]]
         if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $value, $rest) }
         else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $value, $rest) }
       } else {
-        val value = term.seal.cast[Option[Seq[scala.xml.Node]]]
+        val value = term.seal.cast[Option[collection.Seq[scala.xml.Node]]]
         if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $value, $rest) }
         else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $value, $rest) }
       }
