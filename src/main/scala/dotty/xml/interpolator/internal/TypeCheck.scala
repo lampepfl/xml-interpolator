@@ -19,7 +19,7 @@ object TypeCheck {
           attribute.value match {
             case Seq(Placeholder(id)) =>
               val dummy = '{ _root_.scala.xml.TopScope }
-              val expr = the[XmlContext].args(id)
+              val expr = summon[XmlContext].args(id)
               val term = expr.apply(dummy).unseal
               val expected = attribute.isNamespace match {
                 case true => Seq('[String].unseal.tpe)
@@ -30,7 +30,7 @@ object TypeCheck {
                 )
               }
               if (!expected.exists(term.tpe <:< _)) {
-                the[Reporter].error(
+                summon[Reporter].error(
                   s"""type mismatch;
                     | found   : ${term.tpe.widen.show}
                     | required: ${expected.map(_.show).mkString(" | ")}
