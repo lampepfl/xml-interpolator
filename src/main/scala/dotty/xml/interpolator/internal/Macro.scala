@@ -54,7 +54,7 @@ object Macro {
           }
         }
         implCore(xmlStr)
-        errors.result().toExprOfList
+        Expr.ofList(errors.result())
     }
   }
 
