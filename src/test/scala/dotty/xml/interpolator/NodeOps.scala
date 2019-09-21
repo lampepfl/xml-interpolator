@@ -1,6 +1,6 @@
 package dotty.xml.interpolator
 
-delegate NodeOps {
+given NodeOps {
 
   def (self: scala.xml.Node) ≈ (that: scala.xml.Node): Boolean =
     self == that && hasSameScope(self, that)
@@ -17,7 +17,7 @@ delegate NodeOps {
     }
 }
 
-delegate NodeBufferOps {
+given NodeBufferOps {
   def (self: scala.xml.NodeBuffer) ≈ (that: scala.xml.NodeBuffer): Boolean = {
     val selfIt = self.iterator
     val thatIt = that.iterator

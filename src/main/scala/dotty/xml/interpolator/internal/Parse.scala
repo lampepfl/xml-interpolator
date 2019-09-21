@@ -13,7 +13,7 @@ object Parse extends JavaTokenParsers with TokenTests {
 
   override val whiteSpace = "".r
 
-  def apply(input: String) given (reporter: Reporter): Seq[Tree.Node] = {
+  def apply(input: String)(given reporter: Reporter): Seq[Tree.Node] = {
     parseAll(XmlExpr, input) match {
       case Success(result, _) => result
       case failed : NoSuccess => reporter.error(failed.msg, failed.next.pos); Nil
@@ -26,8 +26,8 @@ object Parse extends JavaTokenParsers with TokenTests {
       EmptyElemTag ^^ { case name ~ attributes => Tree.Elem(name, attributes, Nil, None) }
     | STag ~ Content ~ ETag ^^ { case name ~ attributes ~ children ~ end => Tree.Elem(name, attributes, children, Some(end)) }
   )
-  
-  private def EmptyElemTag = "<" ~> Name ~ (S ~> Attribute).* <~ S.? <~ "/>" 
+
+  private def EmptyElemTag = "<" ~> Name ~ (S ~> Attribute).* <~ S.? <~ "/>"
 
   private def STag = "<"  ~> Name ~ (S ~> Attribute).* <~ S.? <~ ">"
   private def ETag = "</" ~> Name <~ S.? <~ ">"

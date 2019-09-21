@@ -2,7 +2,7 @@ package dotty.xml.interpolator
 package internal
 
 import scala.quoted._
-import given scala.quoted.autolift._
+import scala.quoted.autolift.given
 import scala.quoted.matching._
 
 import scala.collection.mutable.ArrayBuffer
@@ -10,7 +10,7 @@ import scala.language.implicitConversions
 
 object Macro {
 
-  def impl(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[given Scope => Any]], scope: Expr[Scope]) given (qctx: QuoteContext): Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
+  def impl(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[(given Scope) => Any]], scope: Expr[Scope])(given qctx: QuoteContext): Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
     ((strCtxExpr, argsExpr): @unchecked) match {
       case ('{ StringContext(${ExprSeq(parts)}: _*) }, ExprSeq(args)) =>
         val (xmlStr, offsets) = encode(parts)
@@ -33,7 +33,7 @@ object Macro {
     }
   }
 
-  def implErrors(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[given Scope => Any]], scope: Expr[Scope]) given (qctx: QuoteContext): Expr[List[(Int, String)]] = {
+  def implErrors(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[(given Scope) => Any]], scope: Expr[Scope])(given qctx: QuoteContext): Expr[List[(Int, String)]] = {
     ((strCtxExpr, argsExpr): @unchecked) match {
       case ('{ StringContext(${ExprSeq(parts)}: _*) }, ExprSeq(args)) =>
         val errors = List.newBuilder[Expr[(Int, String)]]
@@ -54,11 +54,11 @@ object Macro {
           }
         }
         implCore(xmlStr)
-        errors.result().toExprOfList
+        Expr.ofList(errors.result())
     }
   }
 
-  private def implCore(xmlStr: String) given XmlContext, Reporter, QuoteContext: Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
+  private def implCore(xmlStr: String)(given XmlContext, Reporter, QuoteContext): Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
 
     import Parse.{apply => parse}
     import Transform.{apply => transform}
@@ -77,7 +77,7 @@ object Macro {
     interpolate(xmlStr)
   }
 
-  private def encode(parts: Seq[Expr[String]]) given QuoteContext: (String, Array[Int]) = {
+  private def encode(parts: Seq[Expr[String]])(given QuoteContext): (String, Array[Int]) = {
     val sb = new StringBuilder()
     val bf = ArrayBuffer.empty[Int]
 
