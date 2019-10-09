@@ -49,7 +49,7 @@ object Expand {
   }
 
   private def expandAttributes(attributes: Seq[Attribute])(implicit ctx: XmlContext, qctx: QuoteContext): Expr[scala.xml.MetaData] = {
-    import qctx.tasty._
+    import qctx.tasty.{_, given}
     attributes.foldRight('{ _root_.scala.xml.Null }: Expr[scala.xml.MetaData])((attribute, rest) => {
       val value = attribute.value match {
           case Seq(v) => expandNode(v)
@@ -88,7 +88,7 @@ object Expand {
   }
 
   private def expandNamespaces(namespaces: Seq[Attribute])(implicit ctx: XmlContext, qctx: QuoteContext): Expr[scala.xml.NamespaceBinding] = {
-    import qctx.tasty._
+    import qctx.tasty.{_, given}
     namespaces.foldLeft(ctx.scope)((rest, namespace) => {
       val prefix = if (namespace.prefix.nonEmpty) Expr(namespace.key) else '{ null: String }
       val uri = (namespace.value.head: @unchecked) match {
