@@ -12,7 +12,7 @@ object TypeCheck {
   }
 
   private def typecheck(nodes: Seq[Node])(given XmlContext, Reporter)(given qctx: QuoteContext): Unit = {
-    import qctx.tasty._
+    import qctx.tasty.{_, given}
     nodes.foreach {
       case elem : Elem =>
         elem.attributes.foreach(attribute =>
