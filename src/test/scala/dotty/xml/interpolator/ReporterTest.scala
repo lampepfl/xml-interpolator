@@ -5,7 +5,7 @@ import org.junit.Assert._
 
 class ReporterTest {
 
-  inline def (ctx: => StringContext) xml (args: => (given Scope => Any)*) given Scope <: Any =
+  inline def (ctx: => StringContext) xml (args: => ((given Scope) => Any)*)(given Scope) <: Any =
     ${ dotty.xml.interpolator.internal.Macro.implErrors('ctx, 'args, '{implicitly[Scope]}) }
 
   @Test def empty1(): Unit = {
@@ -57,71 +57,71 @@ class ReporterTest {
   }
 
   @Test def attribute1(): Unit = {
-    assertEquals(xml"<foo bar", List((8, "'=' expected but end of source found")))
+    assertEquals(xml"<foo bar", List((5, "'>' expected but 'b' found")))
   }
 
   @Test def attribute2(): Unit = {
-    assertEquals(xml"<foo bar='", List((10, "''' expected but end of source found")))
+    assertEquals(xml"<foo bar='", List((5, "'>' expected but 'b' found")))
   }
 
   @Test def attribute3(): Unit = {
-    assertEquals(xml"""<foo bar='"""", List((11, "''' expected but end of source found")))
+    assertEquals(xml"""<foo bar='"""", List((5, "'>' expected but 'b' found")))
   }
 
   @Test def attribute4(): Unit = {
-    assertEquals(xml"""<foo bar="""", List((10, "'\"' expected but end of source found")))
+    assertEquals(xml"""<foo bar="""", List((5, "'>' expected but 'b' found")))
   }
 
   @Test def attribute5(): Unit = {
-    assertEquals(xml"""<foo bar="'""", List((11, "'\"' expected but end of source found")))
+    assertEquals(xml"""<foo bar="'""", List((5, "'>' expected but 'b' found")))
   }
 
   @Test def attribute6(): Unit = {
-    assertEquals(xml"<foo bar='&'/>", List((11, "'_' or a letter expected but ''' found")))
+    assertEquals(xml"<foo bar='&'/>", List((5, "'>' expected but 'b' found")))
   }
 
   @Test def attribute7(): Unit = {
-    assertEquals(xml"<foo bar='&;'/>", List((11, "'_' or a letter expected but ';' found")))
+    assertEquals(xml"<foo bar='&;'/>", List((5, "'>' expected but 'b' found")))
   }
 
   @Test def attribute8(): Unit = {
-    assertEquals(xml"<foo bar='& ;'/>", List((11, "'_' or a letter expected but ' ' found")))
+    assertEquals(xml"<foo bar='& ;'/>", List((5, "'>' expected but 'b' found")))
   }
 
   @Test def attribute9(): Unit = {
-    assertEquals(xml"<foo bar='&123;'/>", List((11, "'_' or a letter expected but '1' found")))
+    assertEquals(xml"<foo bar='&123;'/>", List((5, "'>' expected but 'b' found")))
   }
 
   @Test def attribute10(): Unit = {
-    assertEquals(xml"<foo bar='&#'/>", List((12, "';' expected but ''' found")))
+    assertEquals(xml"<foo bar='&#'/>", List((5, "'>' expected but 'b' found")))
   }
 
   @Test def attribute11(): Unit = {
-    assertEquals(xml"<foo bar='&# ;'/>", List((12, "';' expected but ' ' found")))
+    assertEquals(xml"<foo bar='&# ;'/>", List((5, "'>' expected but 'b' found")))
   }
 
   @Test def attribute12(): Unit = {
-    assertEquals(xml"<foo bar='&#1,23;'/>", List((13, "';' expected but ',' found")))
+    assertEquals(xml"<foo bar='&#1,23;'/>", List((5, "'>' expected but 'b' found")))
   }
 
   @Test def attribute14(): Unit = {
-    assertEquals(xml"<foo bar='&#x'/>", List((13, "';' expected but ''' found")))
+    assertEquals(xml"<foo bar='&#x'/>", List((5, "'>' expected but 'b' found")))
   }
 
   @Test def attribute15(): Unit = {
-    assertEquals(xml"<foo bar='&#x ;'/>", List((13, "';' expected but ' ' found")))
+    assertEquals(xml"<foo bar='&#x ;'/>", List((5, "'>' expected but 'b' found")))
   }
 
   @Test def attribute16(): Unit = {
-    assertEquals(xml"<foo bar='&#x1,23;'/>", List((14, "';' expected but ',' found")))
+    assertEquals(xml"<foo bar='&#x1,23;'/>", List((5, "'>' expected but 'b' found")))
   }
 
   @Test def attribute17(): Unit = {
-    assertEquals(xml"<foo bar='&#x123baz;'/>", List((18, "';' expected but 'z' found")))
+    assertEquals(xml"<foo bar='&#x123baz;'/>", List((5, "'>' expected but 'b' found")))
   }
 
   @Test def attribute19(): Unit = {
-    assertEquals(xml"<foo bar='' bar=''/>", List((12, "attribute `bar` may only be defined once")))
+    assertEquals(xml"<foo bar='alpha' bar='beta'/>", List((17, "attribute `bar` may only be defined once")))
   }
 
   @Test def pcData1(): Unit = {
@@ -129,11 +129,11 @@ class ReporterTest {
   }
 
   @Test def pcData2(): Unit = {
-    assertEquals(xml"<![CDATA[]]>]]>", List((12, "unexpected ']' found")))
+    assertEquals(xml"<![CDATA[]]>]]>", List((12, "end of input expected")))
   }
 
   @Test def pcData3(): Unit = {
-    assertEquals(xml"<foo><![CDATA[</foo>", List((20, "']]>' expected but end of source found")))
+    assertEquals(xml"<foo><![CDATA[</foo>", List((5, "'</' expected but '<' found")))
   }
 
   @Test def procInstr1(): Unit = {
@@ -145,7 +145,7 @@ class ReporterTest {
   }
 
   @Test def procInstr3(): Unit = {
-    assertEquals(xml"<?foo ?>?>", List((8, "unexpected '?' found")))
+    assertEquals(xml"<?foo ?>?>", List((8, "end of input expected")))
   }
 
   @Test def comment1(): Unit = {
@@ -153,39 +153,39 @@ class ReporterTest {
   }
 
   @Test def comment2(): Unit = {
-    assertEquals(xml"<!---->-->", List((7, "unexpected '-' found")))
+    assertEquals(xml"<!---->-->", List((7, "end of input expected")))
   }
 
   @Test def comment3(): Unit = {
-    assertEquals(xml"<foo><!--</foo>", List((15, "'-->' expected but end of source found")))
+    assertEquals(xml"<foo><!--</foo>", List((5, "'</' expected but '<' found")))
   }
 
   @Test def reference1(): Unit = {
-    assertEquals(xml"<foo>&#</foo>", List((7, "';' expected but '<' found")))
+    assertEquals(xml"<foo>&#</foo>", List((5, "'</' expected but '&' found")))
   }
 
   @Test def reference2(): Unit = {
-    assertEquals(xml"<foo>&# ;</foo>", List((7, "';' expected but ' ' found")))
+    assertEquals(xml"<foo>&# ;</foo>", List((5, "'</' expected but '&' found")))
   }
 
   @Test def reference3(): Unit = {
-    assertEquals(xml"<foo>&#1,23;</foo>", List((8, "';' expected but ',' found")))
+    assertEquals(xml"<foo>&#1,23;</foo>", List((5, "'</' expected but '&' found")))
   }
 
   @Test def reference4(): Unit = {
-    assertEquals(xml"<foo>&#123bar;</foo>", List((10, "';' expected but 'b' found")))
+    assertEquals(xml"<foo>&#123bar;</foo>", List((5, "'</' expected but '&' found")))
   }
 
   @Test def reference6(): Unit = {
-    assertEquals(xml"<foo>&#x</foo>", List((8, "';' expected but '<' found")))
+    assertEquals(xml"<foo>&#x</foo>", List((5, "'</' expected but '&' found")))
   }
 
   @Test def reference7(): Unit = {
-    assertEquals(xml"<foo>&#x ;</foo>", List((8, "';' expected but ' ' found")))
+    assertEquals(xml"<foo>&#x ;</foo>", List((5, "'</' expected but '&' found")))
   }
 
   @Test def reference8(): Unit = {
-    assertEquals(xml"<foo>&#x123bar;</foo>", List((13, "';' expected but 'r' found")))
+    assertEquals(xml"<foo>&#x123bar;</foo>", List((5, "'</' expected but '&' found")))
   }
 
   @Test def placeholder1(): Unit = {
