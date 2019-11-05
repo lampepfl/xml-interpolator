@@ -1,4 +1,4 @@
-val dottyVersion = "0.17.0-RC1" // dottyLatestNightlyBuild.get
+val dottyVersion = "0.20.0-RC1" // dottyLatestNightlyBuild.get
 
 lazy val root = project
   .in(file("."))
@@ -11,8 +11,8 @@ lazy val root = project
       "-Xprint-inline"
     ),
     libraryDependencies ++= Seq(
-      ("org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1").withDottyCompat(scalaVersion.value),
-      ("org.scala-lang.modules" %% "scala-xml" % "1.1.1").withDottyCompat(scalaVersion.value),
+      ("org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2").withDottyCompat(scalaVersion.value),
+      ("org.scala-lang.modules" %% "scala-xml" % "1.2.0").withDottyCompat(scalaVersion.value),
       "com.novocode" % "junit-interface" % "0.11" % "test"
     )
   )

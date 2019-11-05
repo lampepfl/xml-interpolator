@@ -36,11 +36,11 @@ object Expand {
 
   private def expandElem(elem: Elem)(implicit ctx: XmlContext, qctx: QuoteContext): Expr[scala.xml.Elem] = {
     val (namespaces, attributes) = elem.attributes.partition(_.isNamespace)
-    val prefix = if (elem.prefix.nonEmpty) elem.prefix.toExpr else '{ null: String }
-    val label = elem.label.toExpr
+    val prefix = if (elem.prefix.nonEmpty) Expr(elem.prefix) else '{ null: String }
+    val label = Expr(elem.label)
     val attributes1 = expandAttributes(attributes)
     val scope = expandNamespaces(namespaces)
-    val empty = elem.end.isEmpty.toExpr
+    val empty = Expr(elem.end.isEmpty)
     val child = expandNodes(elem.children)(new XmlContext(ctx.args, scope), qctx)
     if (elem.children.isEmpty)
       '{ new _root_.scala.xml.Elem($prefix, $label, $attributes1, $scope, $empty) }
@@ -49,7 +49,7 @@ object Expand {
   }
 
   private def expandAttributes(attributes: Seq[Attribute])(implicit ctx: XmlContext, qctx: QuoteContext): Expr[scala.xml.MetaData] = {
-    import qctx.tasty._
+    import qctx.tasty.{_, given}
     attributes.foldRight('{ _root_.scala.xml.Null }: Expr[scala.xml.MetaData])((attribute, rest) => {
       val value = attribute.value match {
           case Seq(v) => expandNode(v)
@@ -59,65 +59,65 @@ object Expand {
       /*
       value match {
         case '{($value: String )} =>
-          if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $value, $rest) }
-          else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $value, $rest) }
+          if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${Expr(attribute.key)}, $value, $rest) }
+          else '{ new _root_.scala.xml.PrefixedAttribute(${Expr(attribute.prefix)}, ${Expr(attribute.key)}, $value, $rest) }
         case '{($value: Seq[scala.xml.Node])} =>
-          if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $value, $rest) }
-          else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $value, $rest) }
+          if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${Expr(attribute.key)}, $value, $rest) }
+          else '{ new _root_.scala.xml.PrefixedAttribute(${Expr(attribute.prefix)}, ${Expr(attribute.key)}, $value, $rest) }
         case '{($value: Option[Seq[scala.xml.Node]])} =>
-          if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $value, $rest) }
-          else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $value, $rest) }
+          if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${Expr(attribute.key)}, $value, $rest) }
+          else '{ new _root_.scala.xml.PrefixedAttribute(${Expr(attribute.prefix)}, ${Expr(attribute.key)}, $value, $rest) }
       }
       */
 
       val term = value.unseal
       if (term.tpe <:< '[String].unseal.tpe) {
         val value = term.seal.cast[String]
-        if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $value, $rest) }
-        else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $value, $rest) }
-      } else if (term.tpe <:< '[Seq[scala.xml.Node]].unseal.tpe) {
-        val value = term.seal.cast[Seq[scala.xml.Node]]
-        if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $value, $rest) }
-        else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $value, $rest) }
+        if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${Expr(attribute.key)}, $value, $rest) }
+        else '{ new _root_.scala.xml.PrefixedAttribute(${Expr(attribute.prefix)}, ${Expr(attribute.key)}, $value, $rest) }
+      } else if (term.tpe <:< '[collection.Seq[scala.xml.Node]].unseal.tpe) {
+        val value = term.seal.cast[collection.Seq[scala.xml.Node]]
+        if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${Expr(attribute.key)}, $value, $rest) }
+        else '{ new _root_.scala.xml.PrefixedAttribute(${Expr(attribute.prefix)}, ${Expr(attribute.key)}, $value, $rest) }
       } else {
-        val value = term.seal.cast[Option[Seq[scala.xml.Node]]]
-        if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${attribute.key.toExpr}, $value, $rest) }
-        else '{ new _root_.scala.xml.PrefixedAttribute(${attribute.prefix.toExpr}, ${attribute.key.toExpr}, $value, $rest) }
+        val value = term.seal.cast[Option[collection.Seq[scala.xml.Node]]]
+        if (attribute.prefix.isEmpty) '{ new _root_.scala.xml.UnprefixedAttribute(${Expr(attribute.key)}, $value, $rest) }
+        else '{ new _root_.scala.xml.PrefixedAttribute(${Expr(attribute.prefix)}, ${Expr(attribute.key)}, $value, $rest) }
       }
     })
   }
 
   private def expandNamespaces(namespaces: Seq[Attribute])(implicit ctx: XmlContext, qctx: QuoteContext): Expr[scala.xml.NamespaceBinding] = {
-    import qctx.tasty._
+    import qctx.tasty.{_, given}
     namespaces.foldLeft(ctx.scope)((rest, namespace) => {
-      val prefix = if (namespace.prefix.nonEmpty) namespace.key.toExpr else '{ null: String }
+      val prefix = if (namespace.prefix.nonEmpty) Expr(namespace.key) else '{ null: String }
       val uri = (namespace.value.head: @unchecked) match {
-        case Text(text) => text.toExpr
-        case Placeholder(id) => ctx.args(id).apply('{ _root_.scala.xml.TopScope }).asInstanceOf[Expr[String]]
+        case Text(text) => Expr(text)
+        case Placeholder(id) => Expr.betaReduceGiven(ctx.args(id))('{ _root_.scala.xml.TopScope }).asInstanceOf[Expr[String]]
       }
       '{ new _root_.scala.xml.NamespaceBinding($prefix, $uri, $rest) }
     })
   }
 
-  private def expandText(text: Text) given QuoteContext: Expr[scala.xml.Text] =
-    '{ new _root_.scala.xml.Text(${text.text.toExpr}) }
+  private def expandText(text: Text)(given QuoteContext): Expr[scala.xml.Text] =
+    '{ new _root_.scala.xml.Text(${Expr(text.text)}) }
 
-  private def expandComment(comment: Comment) given QuoteContext: Expr[scala.xml.Comment] =
-    '{ new _root_.scala.xml.Comment(${comment.text.toExpr}) }
+  private def expandComment(comment: Comment)(given QuoteContext): Expr[scala.xml.Comment] =
+    '{ new _root_.scala.xml.Comment(${Expr(comment.text)}) }
 
   private def expandPlaceholder(placeholder: Placeholder)(implicit ctx: XmlContext, qctx: QuoteContext): Expr[Any] = {
-    ctx.args(placeholder.id).apply(ctx.scope)
+    Expr.betaReduceGiven(ctx.args(placeholder.id))(ctx.scope)
   }
 
-  private def expandPCData(pcdata: PCData) given QuoteContext: Expr[scala.xml.PCData] =
-    '{ new _root_.scala.xml.PCData(${pcdata.data.toExpr}) }
+  private def expandPCData(pcdata: PCData)(given QuoteContext): Expr[scala.xml.PCData] =
+    '{ new _root_.scala.xml.PCData(${Expr(pcdata.data)}) }
 
-  private def expandProcInstr(instr: ProcInstr) given QuoteContext: Expr[scala.xml.ProcInstr] =
-    '{ new _root_.scala.xml.ProcInstr(${instr.target.toExpr}, ${instr.proctext.toExpr}) }
+  private def expandProcInstr(instr: ProcInstr)(given QuoteContext): Expr[scala.xml.ProcInstr] =
+    '{ new _root_.scala.xml.ProcInstr(${Expr(instr.target)}, ${Expr(instr.proctext)}) }
 
-  private def expandEntityRef(ref: EntityRef) given QuoteContext: Expr[scala.xml.EntityRef] =
-    '{ new _root_.scala.xml.EntityRef(${ref.name.toExpr}) }
+  private def expandEntityRef(ref: EntityRef)(given QuoteContext): Expr[scala.xml.EntityRef] =
+    '{ new _root_.scala.xml.EntityRef(${Expr(ref.name)}) }
 
-  private def expandUnparsed(unparsed: Unparsed) given QuoteContext: Expr[scala.xml.Unparsed] =
-    '{ new _root_.scala.xml.Unparsed(${unparsed.data.toExpr}) }
+  private def expandUnparsed(unparsed: Unparsed)(given QuoteContext): Expr[scala.xml.Unparsed] =
+    '{ new _root_.scala.xml.Unparsed(${Expr(unparsed.data)}) }
 }
