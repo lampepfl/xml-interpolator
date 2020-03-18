@@ -6,13 +6,13 @@ import scala.language.implicitConversions
 import dotty.xml.interpolator.internal.Tree._
 
 object Validate {
-  def apply(nodes: Seq[Node])(given Reporter): Seq[Node] = {
+  def apply(nodes: Seq[Node])(using Reporter): Seq[Node] = {
     mismatchedElements(nodes)
     duplicateAttributes(nodes)
     nodes
   }
 
-  private def mismatchedElements(nodes: Seq[Node])(given reporter: Reporter): Unit = {
+  private def mismatchedElements(nodes: Seq[Node])(using reporter: Reporter): Unit = {
     nodes.foreach {
       case elem@Elem(name, _, _, Some(end)) =>
         if (name != end) reporter.error(s"closing tag `${name}` expected but `${end}` found", elem.pos)
@@ -21,7 +21,7 @@ object Validate {
     }
   }
 
-  private def duplicateAttributes(nodes: Seq[Node])(given reporter: Reporter): Unit = {
+  private def duplicateAttributes(nodes: Seq[Node])(using reporter: Reporter): Unit = {
     nodes.foreach {
       case Elem(_, attributes, children, _) =>
         attributes

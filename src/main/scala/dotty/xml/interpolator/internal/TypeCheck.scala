@@ -6,13 +6,13 @@ import scala.quoted._
 import dotty.xml.interpolator.internal.Tree._
 
 object TypeCheck {
-  def apply(nodes: Seq[Node])(given XmlContext, Reporter, QuoteContext): Seq[Node] = {
+  def apply(nodes: Seq[Node])(using XmlContext, Reporter, QuoteContext): Seq[Node] = {
     typecheck(nodes)
     nodes
   }
 
-  private def typecheck(nodes: Seq[Node])(given XmlContext, Reporter)(given qctx: QuoteContext): Unit = {
-    import qctx.tasty.{_, given}
+  private def typecheck(nodes: Seq[Node])(using XmlContext, Reporter)(using qctx: QuoteContext): Unit = {
+    import qctx.tasty._
     nodes.foreach {
       case elem : Elem =>
         elem.attributes.foreach(attribute =>

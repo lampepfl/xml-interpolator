@@ -49,7 +49,7 @@ object Expand {
   }
 
   private def expandAttributes(attributes: Seq[Attribute])(implicit ctx: XmlContext, qctx: QuoteContext): Expr[scala.xml.MetaData] = {
-    import qctx.tasty.{_, given}
+    import qctx.tasty._
     attributes.foldRight('{ _root_.scala.xml.Null }: Expr[scala.xml.MetaData])((attribute, rest) => {
       val value = attribute.value match {
           case Seq(v) => expandNode(v)
@@ -88,7 +88,7 @@ object Expand {
   }
 
   private def expandNamespaces(namespaces: Seq[Attribute])(implicit ctx: XmlContext, qctx: QuoteContext): Expr[scala.xml.NamespaceBinding] = {
-    import qctx.tasty.{_, given}
+    import qctx.tasty._
     namespaces.foldLeft(ctx.scope)((rest, namespace) => {
       val prefix = if (namespace.prefix.nonEmpty) Expr(namespace.key) else '{ null: String }
       val uri = (namespace.value.head: @unchecked) match {
@@ -99,25 +99,25 @@ object Expand {
     })
   }
 
-  private def expandText(text: Text)(given QuoteContext): Expr[scala.xml.Text] =
+  private def expandText(text: Text)(using QuoteContext): Expr[scala.xml.Text] =
     '{ new _root_.scala.xml.Text(${Expr(text.text)}) }
 
-  private def expandComment(comment: Comment)(given QuoteContext): Expr[scala.xml.Comment] =
+  private def expandComment(comment: Comment)(using QuoteContext): Expr[scala.xml.Comment] =
     '{ new _root_.scala.xml.Comment(${Expr(comment.text)}) }
 
   private def expandPlaceholder(placeholder: Placeholder)(implicit ctx: XmlContext, qctx: QuoteContext): Expr[Any] = {
     Expr.betaReduceGiven(ctx.args(placeholder.id))(ctx.scope)
   }
 
-  private def expandPCData(pcdata: PCData)(given QuoteContext): Expr[scala.xml.PCData] =
+  private def expandPCData(pcdata: PCData)(using QuoteContext): Expr[scala.xml.PCData] =
     '{ new _root_.scala.xml.PCData(${Expr(pcdata.data)}) }
 
-  private def expandProcInstr(instr: ProcInstr)(given QuoteContext): Expr[scala.xml.ProcInstr] =
+  private def expandProcInstr(instr: ProcInstr)(using QuoteContext): Expr[scala.xml.ProcInstr] =
     '{ new _root_.scala.xml.ProcInstr(${Expr(instr.target)}, ${Expr(instr.proctext)}) }
 
-  private def expandEntityRef(ref: EntityRef)(given QuoteContext): Expr[scala.xml.EntityRef] =
+  private def expandEntityRef(ref: EntityRef)(using QuoteContext): Expr[scala.xml.EntityRef] =
     '{ new _root_.scala.xml.EntityRef(${Expr(ref.name)}) }
 
-  private def expandUnparsed(unparsed: Unparsed)(given QuoteContext): Expr[scala.xml.Unparsed] =
+  private def expandUnparsed(unparsed: Unparsed)(using QuoteContext): Expr[scala.xml.Unparsed] =
     '{ new _root_.scala.xml.Unparsed(${Expr(unparsed.data)}) }
 }
