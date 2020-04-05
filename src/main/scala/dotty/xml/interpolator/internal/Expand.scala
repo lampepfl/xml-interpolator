@@ -45,7 +45,7 @@ object Expand {
     if (elem.children.isEmpty)
       '{ new _root_.scala.xml.Elem($prefix, $label, $attributes1, $scope, $empty) }
     else
-      '{ new _root_.scala.xml.Elem($prefix, $label, $attributes1, $scope, $empty, $child: _*) }
+      '{ new _root_.scala.xml.Elem($prefix, $label, $attributes1, $scope, $empty, _root_.scala.xml.NodeSeq.seqToNodeSeq($child): _*) }
   }
 
   private def expandAttributes(attributes: Seq[Attribute])(implicit ctx: XmlContext, qctx: QuoteContext): Expr[scala.xml.MetaData] = {
