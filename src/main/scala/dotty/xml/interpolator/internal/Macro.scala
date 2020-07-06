@@ -43,12 +43,12 @@ object Macro {
           def error(msg: String, idx: Int): Unit = {
             val (part, offset) = Reporter.from(idx, offsets, parts)
             val start = part.unseal.pos.start - parts(0).unseal.pos.start
-            errors += Expr(Tuple2(start + offset, msg))
+            errors += Expr((start + offset, msg))
           }
 
           def error(msg: String, expr: Expr[Any]): Unit = {
             val pos = expr.unseal.pos
-            errors += Expr(Tuple2(pos.start, msg))
+            errors += Expr((pos.start, msg))
           }
         }
         implCore(xmlStr)
