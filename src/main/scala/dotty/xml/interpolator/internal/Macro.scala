@@ -2,7 +2,6 @@ package dotty.xml.interpolator
 package internal
 
 import scala.quoted._
-import scala.quoted.autolift
 
 import scala.collection.mutable.ArrayBuffer
 import scala.language.implicitConversions
@@ -44,12 +43,12 @@ object Macro {
           def error(msg: String, idx: Int): Unit = {
             val (part, offset) = Reporter.from(idx, offsets, parts)
             val start = part.unseal.pos.start - parts(0).unseal.pos.start
-            errors += '{ Tuple2(${start + offset}, $msg) }
+            errors += Expr(Tuple2(start + offset, msg))
           }
 
           def error(msg: String, expr: Expr[Any]): Unit = {
             val pos = expr.unseal.pos
-            errors += '{ Tuple2(${pos.start}, $msg) }
+            errors += Expr(Tuple2(pos.start, msg))
           }
         }
         implCore(xmlStr)
