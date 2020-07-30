@@ -93,7 +93,9 @@ object Expand {
       val prefix = if (namespace.prefix.nonEmpty) Expr(namespace.key) else '{ null: String }
       val uri = (namespace.value.head: @unchecked) match {
         case Text(text) => Expr(text)
-        case Placeholder(id) => Expr.betaReduceGiven(ctx.args(id))('{ _root_.scala.xml.TopScope }).asInstanceOf[Expr[String]]
+        case Placeholder(id) =>
+          val call = '{ ${ctx.args(id)}(using _root_.scala.xml.TopScope) }
+          Expr.betaReduce(call).cast[String]
       }
       '{ new _root_.scala.xml.NamespaceBinding($prefix, $uri, $rest) }
     })
@@ -106,7 +108,9 @@ object Expand {
     '{ new _root_.scala.xml.Comment(${Expr(comment.text)}) }
 
   private def expandPlaceholder(placeholder: Placeholder)(implicit ctx: XmlContext, qctx: QuoteContext): Expr[Any] = {
-    Expr.betaReduceGiven(ctx.args(placeholder.id))(ctx.scope)
+    val arg = ctx.args(placeholder.id)
+    val scope = ctx.scope
+    Expr.betaReduce('{ $arg(using $scope) })
   }
 
   private def expandPCData(pcdata: PCData)(using QuoteContext): Expr[scala.xml.PCData] =
