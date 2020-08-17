@@ -1,6 +1,6 @@
 package dotty.xml.interpolator
 
-extension nodeOps on (self: scala.xml.Node) {
+extension (self: scala.xml.Node) {
 
   def ≈ (that: scala.xml.Node): Boolean =
     self == that && hasSameScope(self, that)
@@ -17,7 +17,7 @@ private def hasSameScope(current: scala.xml.Node, that: scala.xml.Node): Boolean
     zipped.forall(hasSameScope)
   }
 
-extension nodeBufferOps on (self: scala.xml.NodeBuffer) {
+extension (self: scala.xml.NodeBuffer) {
   def ≈ (that: scala.xml.NodeBuffer): Boolean = {
     val selfIt = self.iterator
     val thatIt = that.iterator
