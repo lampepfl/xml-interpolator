@@ -11,8 +11,8 @@ extension (self: scala.xml.Node) {
 private def hasSameScope(current: scala.xml.Node, that: scala.xml.Node): Boolean =
   current.scope == that.scope && {
     val zipped = (current, that) match {
-      case (g1: scala.xml.Group, g2: scala.xml.Group) => (g1.nodes, g2.nodes).zipped
-      case (n1, n2)                       => (n1.child, n2.child).zipped
+      case (g1: scala.xml.Group, g2: scala.xml.Group) => g1.nodes.lazyZip(g2.nodes)
+      case (n1, n2) => n1.child.lazyZip(n2.child)
     }
     zipped.forall(hasSameScope)
   }
