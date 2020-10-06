@@ -20,11 +20,11 @@ object Macro {
             val (part, offset) = Reporter.from(idx, offsets, parts)
             val pos = part.unseal.pos
             val (srcF, start) = (pos.sourceFile, pos.start)
-            qctx.tasty.error(msg, srcF, start + offset, start + offset + 1)
+            Reporting.error(msg, srcF, start + offset, start + offset + 1)
           }
 
           def error(msg: String, expr: Expr[Any]): Unit = {
-            qctx.tasty.error(msg, expr.unseal.pos)
+            report.error(msg, expr)
           }
         }
         implCore(xmlStr)
