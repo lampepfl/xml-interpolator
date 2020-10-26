@@ -22,11 +22,11 @@ object TypeCheck {
               val expr = summon[XmlContext].args(id)
               val term = Expr.betaReduce('{$expr(using $dummy)}).unseal
               val expected = attribute.isNamespace match {
-                case true => Seq(Type.of[String])
+                case true => Seq(TypeRepr.of[String])
                 case _ => Seq(
-                  Type.of[String],
-                  Type.of[collection.Seq[scala.xml.Node]],
-                  Type.of[Option[collection.Seq[scala.xml.Node]]]
+                  TypeRepr.of[String],
+                  TypeRepr.of[collection.Seq[scala.xml.Node]],
+                  TypeRepr.of[Option[collection.Seq[scala.xml.Node]]]
                 )
               }
               if (!expected.exists(term.tpe <:< _)) {
