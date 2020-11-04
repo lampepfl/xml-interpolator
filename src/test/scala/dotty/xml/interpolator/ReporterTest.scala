@@ -5,7 +5,7 @@ import org.junit.Assert._
 
 class ReporterTest {
 
-  transparent inline def (inline ctx: StringContext) xml (inline args: (Scope ?=> Any)*)(using Scope): Any =
+  extension (inline ctx: StringContext) transparent inline def xml (inline args: (Scope ?=> Any)*)(using Scope): Any =
     ${ dotty.xml.interpolator.internal.Macro.implErrors('ctx, 'args, '{implicitly[Scope]}) }
 
   @Test def empty1(): Unit = {
