@@ -14,6 +14,7 @@ project/boot/
 project/plugins/project/
 project/local-plugins.sbt
 .history
+.bsp
 
 # VS Code
 .vscode/
