@@ -33,7 +33,7 @@ object Macro {
     implCore(xmlStr)
   }
 
-  def implUnapply(xmlStrCtxExpr: Expr[XML.StringContext], elemExpr: Expr[scala.xml.Node | scala.xml.NodeBuffer], scope: Expr[Scope])(using qctx: Quotes): Expr[Option[Seq[Any]]] = {
+  def implUnapply(xmlStrCtxExpr: Expr[XML.StringContext], elemExpr: Expr[scala.xml.Node | scala.xml.NodeBuffer], scope: Expr[Scope])(using Quotes): Expr[Option[Seq[Any]]] = {
     val '{ xml(StringContext(${Varargs(parts)}: _*)) } = xmlStrCtxExpr
     val (xmlStr, offsets) = encode(parts)
 
@@ -100,20 +100,17 @@ object Macro {
     import FillPlaceholders.{apply => fill_placeholders}
 
     '{
-      ${elemExpr} match {
-        case e: scala.xml.Node =>
-          for {
-            map <- fill_placeholders(${ Expr(parsed) }, Seq(e))
-          } yield {
-            val keys = map.keys.toList.sorted
-            assert(!keys.zipWithIndex.exists((k, i) => k != i))
-            keys.map(map)
-          }
-        case e =>
-          // TODO: can this be NodeBuffer?
-          println("???")
-          println(e.getClass)
-          ???
+      val nodes = ${elemExpr} match {
+        case e: scala.xml.Node => Seq(e)
+        case e: scala.xml.NodeBuffer => e
+      }
+
+      for {
+        map <- fill_placeholders(${ Expr(parsed) }, nodes)
+      } yield {
+        val keys = map.keys.toList.sorted
+        assert(!keys.zipWithIndex.exists((k, i) => k != i))
+        keys.map(map)
       }
     }
   }

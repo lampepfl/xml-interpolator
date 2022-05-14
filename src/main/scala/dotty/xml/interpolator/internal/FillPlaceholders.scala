@@ -7,6 +7,7 @@ import dotty.xml.interpolator.internal.Tree.*
 
 import scala.annotation.tailrec
 import scala.xml.Node.unapplySeq
+import scala.xml.SpecialNode
 
 // TODO: are placeholders always in a preorder? then we can use Seq instead of Map, with special handling for attributes
 object FillPlaceholders {
@@ -54,7 +55,7 @@ object FillPlaceholders {
     if nodes.length != refNodes.length then
       return None
 
-    nodes
+    Some(nodes
       .filter {
         case _: Comment => false
         case _ => true
@@ -63,13 +64,11 @@ object FillPlaceholders {
         case _: scala.xml.Comment => false
         case _ => true
       })
-      .foldLeft(Some(Map()): Option[Map[Int, Any]]) {
-        case (Some(map), (node, ref)) =>
-          for fromNode <- findInNode(node, ref)
-          yield map ++ fromNode
-        case (None, _) =>
-          return None
-      }
+      .foldLeft(Map[Int, Any]()) { case (map, (node, ref)) =>
+        findInNode(node, ref) match
+          case None => return None
+          case Some(fromNode) => map ++ fromNode
+      })
   }
 
   private def findInGroup(group: Group, refGroup: scala.xml.Group): Option[Map[Int, Any]] =
@@ -98,23 +97,15 @@ object FillPlaceholders {
   }
 
   private def findInAttributes(attributes: Seq[Attribute], refAttributes: Seq[scala.xml.Attribute]): Option[Map[Int, Any]] = {
-    if attributes.length != refAttributes.length then
-      return None
-
-    val attributes1 = attributes.sortBy(_.name)
-    val refAttributes1 = refAttributes.sortBy { a =>
-      if a.isPrefixed then s"${a.pre}:${a.key}" else a.key
-    }
-
-    attributes1
-      .zip(refAttributes1)
-      .foldLeft(Some(Map()): Option[Map[Int, Any]]) {
-        case (Some(map), (attr, refAttr)) =>
-          for fromNodes <- findInNodes(attr.value, refAttr.value)
-          yield map ++ fromNodes
-        case _ =>
-          return None
-      }
+    Some(attributes
+      .foldLeft(Map[Int, Any]()) { (map, attr) =>
+        refAttributes.find(_.prefixedKey == attr.name) match
+          case None => return None
+          case Some(refAttr) =>
+            findInNodes(attr.value, refAttr.value) match
+              case None => return None
+              case Some(fromNodes) => map ++ fromNodes
+      })
   }
 
   private def findInText(text: Text, refText: scala.xml.Text): Option[Map[Int, Any]] =
