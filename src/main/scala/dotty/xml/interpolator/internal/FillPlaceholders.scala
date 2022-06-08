@@ -7,7 +7,7 @@ import dotty.xml.interpolator.internal.Tree.*
 
 import scala.annotation.tailrec
 import scala.xml.Node.unapplySeq
-import scala.xml.SpecialNode
+import scala.xml.{NamespaceBinding, SpecialNode}
 
 object FillPlaceholders {
   // Assumes that placeholder indices are in increasing order left to right
@@ -76,31 +76,71 @@ object FillPlaceholders {
         case scala.xml.Null => attrs
         case attr: scala.xml.Attribute => extractAttributes(attr.next, attr.copy(scala.xml.Null) +: attrs)
 
-    val refAttributes = extractAttributes(refElem.attributes)
     if !strEq(elem.prefix, refElem.prefix) then
       return None
 
     if !strEq(elem.label, refElem.label) then
       return None
 
+    val refAttributes = extractAttributes(refElem.attributes)
+    val refScope = refElem.scope
+
     for
-      fromAttributes <- findInAttributes(elem.attributes, refAttributes)
+      fromAttributes <- findInAttributes(elem.attributes, refElem)
       fromChildren <- findInNodes(elem.children, refElem.child)
     yield
       fromAttributes ++ fromChildren
   }
 
-  private def findInAttributes(attributes: Seq[Attribute], refAttributes: Seq[scala.xml.Attribute]): Option[Seq[Any]] = {
+  private def findInAttributes(attributes: Seq[Attribute], refElem: scala.xml.Elem): Option[Seq[Any]] = {
+
+
     Some(attributes
       .foldLeft(Seq[Any]()) { (seq, attr) =>
-        refAttributes.find(_.prefixedKey == attr.name) match
-          case None => return None
+        refElem.attributes.find(_.prefixedKey == attr.name) match
           case Some(refAttr) =>
             findInNodes(attr.value, refAttr.value) match
               case None => return None
               case Some(fromNodes) => seq ++ fromNodes
+          case None if attr.prefix == "xmlns" =>
+            findInBindings(attr.key, attr.value, refElem.scope) match
+              case None => return None
+              case Some(nb) => seq ++ nb
+          case None if attr.prefix == "" && attr.key == "xmlns" =>
+            findInBindings("", attr.value, refElem.scope) match
+              case None => return None
+              case Some(nb) => seq ++ nb
+          case None =>
+            return None
       })
   }
+
+  private def findInBindings(key: String, value: Seq[Node], refBindings: scala.xml.NamespaceBinding): Option[Seq[String]] =
+    extension (scope: NamespaceBinding) @tailrec def find(p: NamespaceBinding => Boolean): Option[NamespaceBinding] = {
+      if scope == scala.xml.TopScope then
+        None
+      else if p(scope) then
+        Some(scope)
+      else
+        scope.parent.find(p)
+    }
+
+    refBindings.find(nb => strEq(nb.prefix, key)) match
+      case Some(refNsBinding) =>
+        findInNsBinding(value, refNsBinding)
+      case None =>
+        None
+
+  private def findInNsBinding(nodes: Seq[Node], refBinding: scala.xml.NamespaceBinding): Option[Seq[String]] =
+    nodes match
+      case Seq(Text(text)) =>
+        if text == refBinding.uri then
+          Some(Seq())
+        else
+          None
+      case Seq(p@Placeholder(_)) =>
+        fillPlaceholder(p, refBinding.uri)
+      case _ => None
 
   private def findInText(text: Text, refText: scala.xml.Text): Option[Seq[Any]] =
     if text.text == refText.text then
@@ -108,7 +148,7 @@ object FillPlaceholders {
     else
       None
 
-  private def fillPlaceholder(placeholder: Placeholder, data: scala.xml.Node): Option[Seq[Any]] =
+  private def fillPlaceholder(placeholder: Placeholder, data: scala.xml.Node | String): Option[Seq[data.type]] =
     Some(Seq(data))
 
   private def findInPCData(pcdata: PCData, refPCData: scala.xml.PCData): Option[Seq[Any]] =

@@ -35,6 +35,11 @@ class ExtractionTest {
     assertEquals(y, new scala.xml.Atom(2))
   }
 
+  // matching against a value doesn't work (it also has problems in scala2)
+//  @Test def elem5(): Unit = {
+//    val xml"<foo>${"bar"}</foo>" = <foo>{"bar"}</foo>
+//  }
+
   @Test def buffer1(): Unit = {
     val xml"<foo/><bar/>" = <foo/><bar/>
   }
@@ -50,11 +55,6 @@ class ExtractionTest {
     assertEquals(x, new scala.xml.Atom(1))
     assertEquals(y, new scala.xml.Atom(2))
   }
-
-// fixed-value matching doesn't work (it also has problems in scala2)
-//  @Test def elem2(): Unit = {
-//    val xml"<foo>${"bar"}</foo>" = <foo>{"bar"}</foo>
-//  }
 
   @Test def closing1(): Unit = {
     val xml"<foo/>" = <foo/>
@@ -158,9 +158,78 @@ class ExtractionTest {
 //    assertEquals(y, new scala.xml.Atom(2))
 //  }
 
-  // TODO: namespace matching
-//  @Test def namespace1(): Unit = {
-//    val xml"""<foo xmlns=$x/>""" = <foo xmlns={"bar"}/>
-//    assertEquals(x, "bar")
-//  }
+  @Test def namespace1(): Unit = {
+    val xml"<foo xmlns=$x/>" = <foo xmlns={"bar"}/>
+    assertEquals(x, "bar")
+  }
+
+  @Test def namespace2(): Unit = {
+    val xml"""<foo xmlns="bar"/>""" = <foo xmlns={"bar"}/>
+  }
+
+  @Test def namespace3(): Unit = {
+    val xml"<foo/>" = <foo xmlns={"bar"}/>
+  }
+
+  @Test def namespace4(): Unit = {
+    val xml"<foo xmlns:pre=$x/>" = <foo xmlns:pre={"bar"}/>
+    assertEquals(x, "bar")
+  }
+
+  @Test def namespace5(): Unit = {
+    val xml"""<foo xmlns:pre="bar"/>""" = <foo xmlns:pre={"bar"}/>
+  }
+
+  @Test def namespace6(): Unit = {
+    val xml"<foo/>" = <foo xmlns:pre={"bar"}/>
+  }
+
+  @Test def namespace7(): Unit = {
+    val xml"<foo xmlns:a=$a xmlns:b=$b/>" = <foo xmlns:a="uri1" xmlns:b="uri2"/>
+    assertEquals(a, "uri1")
+    assertEquals(b, "uri2")
+  }
+
+  @Test def namespace8(): Unit = {
+    val xml"<foo xmlns:a=$a xmlns:b=$b/>" = <foo xmlns:b="uri2" xmlns:a="uri1"/>
+    assertEquals(a, "uri1")
+    assertEquals(b, "uri2")
+  }
+
+  @Test def namespace9(): Unit = {
+    val xml"""<foo xmlns:a="uri1" xmlns:b="uri2"/>""" = <foo xmlns:a="uri1" xmlns:b="uri2"/>
+  }
+
+  @Test def namespace10(): Unit = {
+    val xml"""<foo xmlns:a="uri1" xmlns:b="uri2"/>""" = <foo xmlns:b="uri2" xmlns:a="uri1"/>
+  }
+
+  @Test def namespace11(): Unit = {
+    val xml"""<foo xmlns:a="uri1"/>""" = <foo xmlns:a="uri1" xmlns:b="uri2"/>
+  }
+
+  @Test def namespace12(): Unit = {
+    val xml"""<foo xmlns:b="uri2"/>""" = <foo xmlns:a="uri1" xmlns:b="uri2"/>
+  }
+
+  @Test def namespace13(): Unit = {
+    val xml"""<foo xmlns:b=$b/>""" = <foo xmlns:a="uri1" xmlns:b="uri2"/>
+    assertEquals(b, "uri2")
+  }
+
+  @Test def namespace14(): Unit = {
+    val xml"""<foo/>""" = <foo xmlns:a="uri1" xmlns:b="uri2"/>
+  }
+
+  @Test def namespace15(): Unit = {
+    val xml"<foo xmlns:pre1=$a><bar xmlns:pre2=$b/></foo>" = <foo xmlns:pre1="uri1"><bar xmlns:pre2="uri2"/></foo>
+    assertEquals(a, "uri1")
+    assertEquals(b, "uri2")
+  }
+
+  @Test def namespace16(): Unit = {
+    val xml"<foo xmlns:pre=$a><bar xmlns:pre=$b/></foo>" = <foo xmlns:pre="uri1"><bar xmlns:pre="uri2"/></foo>
+    assertEquals(a, "uri1")
+    assertEquals(b, "uri2")
+  }
 }
