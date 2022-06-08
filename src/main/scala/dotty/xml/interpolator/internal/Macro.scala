@@ -105,13 +105,7 @@ object Macro {
         case e: scala.xml.NodeBuffer => e
       }
 
-      for {
-        map <- fill_placeholders(${ Expr(parsed) }, nodes)
-      } yield {
-        val keys = map.keys.toList.sorted
-        assert(!keys.zipWithIndex.exists((k, i) => k != i))
-        keys.map(map)
-      }
+      fill_placeholders(${ Expr(parsed) }, nodes)
     }
   }
 

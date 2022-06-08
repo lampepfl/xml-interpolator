@@ -186,5 +186,5 @@ object Parse extends JavaTokenParsers with TokenTests {
 
   private def Eq = S.? ~ "=" ~ S.?
 
-  private def Placeholder = positioned(HoleStart ~ HoleChar.* ^^ { case char ~ chars => Tree.Placeholder((char :: chars).length -1) })
+  private def Placeholder = positioned(HoleStart ~ HoleChar.* ^^ { case char ~ chars => Tree.Placeholder((char :: chars).length - 1) })
 }
