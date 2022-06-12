@@ -10,9 +10,6 @@ object XML:
   def apply(ctx: scala.StringContext): StringContext = ctx
   def unapply(ctx: StringContext): Option[scala.StringContext] = Some(ctx)
 
-//extension (inline ctx: StringContext) transparent inline def xml (inline args: (Scope ?=> Any)*)(using scope: Scope): Any =
-//  ${ dotty.xml.interpolator.internal.Macro.impl('ctx, 'args, 'scope) }
-
 extension (ctx: StringContext) def xml: XML.StringContext = XML(ctx)
 
 extension (inline ctx: XML.StringContext) transparent inline def apply(inline args: (Scope ?=> Any)*)(using scope: Scope): Any =
