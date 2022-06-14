@@ -19,6 +19,9 @@ project/local-plugins.sbt
 # VS Code
 .vscode/
 
+# IntelliJ
+.idea/
+
 # Dotty IDE
 /.dotty-ide-dev-port
 /.dotty-ide-artifact
