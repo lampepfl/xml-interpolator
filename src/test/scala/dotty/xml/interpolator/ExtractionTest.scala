@@ -35,6 +35,26 @@ class ExtractionTest {
     assertEquals(y, new scala.xml.Atom(2))
   }
 
+  @Test def comment1(): Unit = {
+    val xml"<foo>$x</foo>" = <foo><!--comment-->{1}</foo>
+    assertEquals(x, new scala.xml.Atom(1))
+  }
+
+  @Test def comment2(): Unit = {
+    val xml"<foo><!--comment-->$x</foo>" = <foo>{1}</foo>
+    assertEquals(x, new scala.xml.Atom(1))
+  }
+
+  @Test def comment3(): Unit = {
+    val xml"<foo><!--comment-->$x</foo>" = <foo><!--different comment-->{1}</foo>
+    assertEquals(x, new scala.xml.Atom(1))
+  }
+
+  @Test def comment4(): Unit = {
+    val xml"<foo><!--comment-->$x</foo>" = <foo>{1}<!--different comment--></foo>
+    assertEquals(x, new scala.xml.Atom(1))
+  }
+
   // matching against a value doesn't work (it also has problems in scala2)
 //  @Test def elem5(): Unit = {
 //    val xml"<foo>${"bar"}</foo>" = <foo>{"bar"}</foo>

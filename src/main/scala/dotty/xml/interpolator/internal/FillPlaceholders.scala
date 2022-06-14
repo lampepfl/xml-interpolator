@@ -9,15 +9,12 @@ import scala.annotation.tailrec
 import scala.xml.Node.unapplySeq
 import scala.xml.{NamespaceBinding, SpecialNode}
 
+type RetElem = scala.xml.Node | String
+
 object FillPlaceholders {
   // Assumes that placeholder indices are in increasing order left to right
   def apply(nodes: Seq[Node], refNodes: Seq[scala.xml.Node]): Option[Seq[Any]] = {
-    // remove comments
-    val nodes1 = nodes.filter(!_.isInstanceOf[Comment])
-    val refNodes1 = refNodes.filter(!_.isInstanceOf[scala.xml.Comment])
-
-    if (nodes1.size == 1) findInNode(nodes1.head, refNodes1.head)
-    else findInNodes(nodes1, refNodes1)
+    findInNodes(nodes, refNodes)
   }
 
   // string equality where (null == "")
@@ -25,7 +22,7 @@ object FillPlaceholders {
     (if s1 == null then "" else s1) == (if s2 == null then "" else s2)
 
   // expects comments to be removed
-  private def findInNode(node: Node, refNode: scala.xml.Node): Option[Seq[Any]] = {
+  private def findInNode(node: Node, refNode: scala.xml.Node): Option[Seq[RetElem]] = {
     (node, refNode) match {
       case (group: Group, refGroup: scala.xml.Group)                 => findInGroup(group, refGroup)
       case (elem: Elem, refElem: scala.xml.Elem)                     => findInElem(elem, refElem)
@@ -37,53 +34,40 @@ object FillPlaceholders {
       case (unparsed: Unparsed, refUnparsed: scala.xml.Unparsed)     => findInUnparsed(unparsed, refUnparsed)
 
       // assertions
-      case (_: Comment, _)           => throw IllegalStateException("comment passed as first argument to findInNode")
-      case (_, _: scala.xml.Comment) => throw IllegalStateException("comment passed as second argument to findInNode")
+      case (_: Comment, _)           => throw AssertionError("comment passed as first argument to findInNode")
+      case (_, _: scala.xml.Comment) => throw AssertionError("comment passed as second argument to findInNode")
 
       // non-matching nodes
       case _ => None
     }
   }
 
-  private def findInNodes(nodes: Seq[Node], refNodes: Seq[scala.xml.Node]): Option[Seq[Any]] = {
-    if nodes.length != refNodes.length then
+  private def findInNodes(nodes: Seq[Node], refNodes: Seq[scala.xml.Node]): Option[Seq[RetElem]] = {
+    // remove comments
+    val nodes1 = nodes.filter(!_.isInstanceOf[Comment])
+    val refNodes1 = refNodes.filter(!_.isInstanceOf[scala.xml.Comment])
+
+    if nodes1.length != refNodes1.length then
       return None
 
-    Some(nodes
-      .filter {
-        case _: Comment => false
-        case _ => true
-      }
-      .zip(refNodes.filter {
-        case _: scala.xml.Comment => false
-        case _ => true
-      })
-      .foldLeft(Seq[Any]()) { case (seq, (node, ref)) =>
+    Some(nodes1
+      .zip(refNodes1)
+      .foldLeft(Seq[RetElem]()) { case (seq, (node, ref)) =>
         findInNode(node, ref) match
           case None => return None
           case Some(fromNode) => seq ++ fromNode
       })
   }
 
-  private def findInGroup(group: Group, refGroup: scala.xml.Group): Option[Seq[Any]] =
+  private def findInGroup(group: Group, refGroup: scala.xml.Group): Option[Seq[RetElem]] =
     findInNodes(group.nodes, refGroup.nodes)
 
-  private def findInElem(elem: Elem, refElem: scala.xml.Elem): Option[Seq[Any]] = {
-    // convert from linked list representation to a Seq of scala.xml.MetaData where each element's next is Null
-    @tailrec
-    def extractAttributes(metadata: scala.xml.MetaData, attrs: Seq[scala.xml.Attribute] = Seq()): Seq[scala.xml.Attribute] =
-      metadata match
-        case scala.xml.Null => attrs
-        case attr: scala.xml.Attribute => extractAttributes(attr.next, attr.copy(scala.xml.Null) +: attrs)
-
+  private def findInElem(elem: Elem, refElem: scala.xml.Elem): Option[Seq[RetElem]] = {
     if !strEq(elem.prefix, refElem.prefix) then
       return None
 
     if !strEq(elem.label, refElem.label) then
       return None
-
-    val refAttributes = extractAttributes(refElem.attributes)
-    val refScope = refElem.scope
 
     for
       fromAttributes <- findInAttributes(elem.attributes, refElem)
@@ -92,11 +76,9 @@ object FillPlaceholders {
       fromAttributes ++ fromChildren
   }
 
-  private def findInAttributes(attributes: Seq[Attribute], refElem: scala.xml.Elem): Option[Seq[Any]] = {
-
-
+  private def findInAttributes(attributes: Seq[Attribute], refElem: scala.xml.Elem): Option[Seq[RetElem]] = {
     Some(attributes
-      .foldLeft(Seq[Any]()) { (seq, attr) =>
+      .foldLeft(Seq[RetElem]()) { (seq, attr) =>
         refElem.attributes.find(_.prefixedKey == attr.name) match
           case Some(refAttr) =>
             findInNodes(attr.value, refAttr.value) match
@@ -126,40 +108,33 @@ object FillPlaceholders {
     }
 
     refBindings.find(nb => strEq(nb.prefix, key)) match
+      case None => None
       case Some(refNsBinding) =>
         findInNsBinding(value, refNsBinding)
-      case None =>
-        None
 
   private def findInNsBinding(nodes: Seq[Node], refBinding: scala.xml.NamespaceBinding): Option[Seq[String]] =
     nodes match
-      case Seq(Text(text)) =>
-        if text == refBinding.uri then
-          Some(Seq())
-        else
-          None
+      case Seq(Text(text)) if text == refBinding.uri =>
+        Some(Nil)
       case Seq(p@Placeholder(_)) =>
         fillPlaceholder(p, refBinding.uri)
       case _ => None
 
-  private def findInText(text: Text, refText: scala.xml.Text): Option[Seq[Any]] =
-    if text.text == refText.text then
-      Some(Seq())
-    else
-      None
+  private def findInText(text: Text, refText: scala.xml.Text): Option[Seq[Nothing]] =
+    if text.text == refText.text then Some(Nil) else None
 
   private def fillPlaceholder(placeholder: Placeholder, data: scala.xml.Node | String): Option[Seq[data.type]] =
     Some(Seq(data))
 
-  private def findInPCData(pcdata: PCData, refPCData: scala.xml.PCData): Option[Seq[Any]] =
-    if pcdata.data == refPCData.data then Some(Seq()) else None
+  private def findInPCData(pcdata: PCData, refPCData: scala.xml.PCData): Option[Seq[Nothing]] =
+    if pcdata.data == refPCData.data then Some(Nil) else None
 
-  private def findInProcInstr(instr: ProcInstr, refInstr: scala.xml.ProcInstr): Option[Seq[Any]] =
-    if instr.target == refInstr.target then Some(Seq()) else None
+  private def findInProcInstr(instr: ProcInstr, refInstr: scala.xml.ProcInstr): Option[Seq[Nothing]] =
+    if instr.target == refInstr.target then Some(Nil) else None
 
-  private def findInEntityRef(ref: EntityRef, refRef: scala.xml.EntityRef): Option[Seq[Any]] =
-    if ref.name == refRef.entityName then Some(Seq()) else None
+  private def findInEntityRef(ref: EntityRef, refRef: scala.xml.EntityRef): Option[Seq[Nothing]] =
+    if ref.name == refRef.entityName then Some(Nil) else None
 
-  private def findInUnparsed(unparsed: Unparsed, refUnparsed: scala.xml.Unparsed): Option[Seq[Any]] =
-    if unparsed.data == refUnparsed.data then Some(Seq()) else None
+  private def findInUnparsed(unparsed: Unparsed, refUnparsed: scala.xml.Unparsed): Option[Seq[Nothing]] =
+    if unparsed.data == refUnparsed.data then Some(Nil) else None
 }

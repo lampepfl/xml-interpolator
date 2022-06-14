@@ -8,7 +8,6 @@ implicit val top: Scope = scala.xml.TopScope
 object XML:
   opaque type StringContext = scala.StringContext
   def apply(ctx: scala.StringContext): StringContext = ctx
-  def unapply(ctx: StringContext): Option[scala.StringContext] = Some(ctx)
 
 extension (ctx: StringContext) def xml: XML.StringContext = XML(ctx)
 
