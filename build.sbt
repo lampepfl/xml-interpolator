@@ -16,3 +16,12 @@ lazy val root = project
       "com.novocode" % "junit-interface" % "0.11" % "test"
     )
   )
+
+ThisBuild / githubWorkflowJavaVersions := Seq("8", "11", "17").map(JavaSpec.temurin)
+ThisBuild / githubWorkflowScalaVersions := Seq(dottyVersion)
+ThisBuild / githubWorkflowBuildPostamble := Seq(
+  // This runs the template with the default parameters, and runs test within the templated app.
+  WorkflowStep.Run(List("sbt test")),
+)
+ThisBuild / githubWorkflowPublishTargetBranches := Nil
+Global / onChangedBuildSource := ReloadOnSourceChanges
