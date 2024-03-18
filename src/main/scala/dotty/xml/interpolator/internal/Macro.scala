@@ -81,7 +81,7 @@ object Macro {
 
     def appendPart(part: Expr[String]) = {
       bf += sb.length
-      sb ++= part.valueOrError
+      sb ++= part.valueOrAbort
       bf += sb.length
     }
 

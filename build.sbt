@@ -1,14 +1,14 @@
-val dottyVersion = "3.1.2" // dottyLatestNightlyBuild.get
+val dottyVersion = "3.3.3" // dottyLatestNightlyBuild.get
 
 lazy val root = project
   .in(file("."))
   .settings(
-    name := "dotty-xml-interpolator",
+    name := "scala-xml-interpolator",
     version := "0.1.0",
 
     scalaVersion := dottyVersion,
     scalacOptions ++= Seq(
-      "-Xprint-inline"
+      "-deprecation"
     ),
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" % "scala-parser-combinators_2.13" % "1.1.2",
