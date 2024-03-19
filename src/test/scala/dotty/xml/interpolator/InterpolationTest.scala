@@ -6,7 +6,6 @@ import org.junit.Assert._
 import scala.compiletime.testing._
 
 class InterpolationTest {
-
   @Test def elem1(): Unit = {
     assert(xml"<foo>${2}</foo>" ≈ <foo>{2}</foo>)
   }
