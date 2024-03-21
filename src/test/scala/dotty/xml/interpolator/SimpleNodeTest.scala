@@ -126,7 +126,7 @@ class SimpleNodeTest {
   }
 
   @Test def comment2(): Unit = {
-    assert(xml"<!----->" ≈ <!----->)
+    assert(xml"<!-- -->" ≈ <!-- -->)
   }
 
   @Test def comment3(): Unit = {
