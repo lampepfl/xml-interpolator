@@ -6,38 +6,43 @@ import scala.quoted._
 import scala.collection.mutable.ArrayBuffer
 import scala.language.implicitConversions
 
-object Macro {
+object Macro:
 
-  def impl(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[Scope ?=> Any]], scope: Expr[Scope])(using qctx: Quotes): Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
-    ((strCtxExpr, argsExpr): @unchecked) match {
+  /** ??? */
+  def impl(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[Scope ?=> Any]], scope: Expr[Scope])
+          (using Quotes): Expr[scala.xml.Node | scala.xml.NodeBuffer] =
+
+    (strCtxExpr, argsExpr) match
       case ('{ StringContext(${Varargs(parts)}: _*) }, Varargs(args)) =>
+
         val (xmlStr, offsets) = encode(parts)
-        implicit val ctx: XmlContext = new XmlContext(args, scope)
-        implicit val reporter: Reporter = new Reporter {
-          import quotes.reflect._
 
-          def error(msg: String, idx: Int): Unit = {
-            val (part, offset) = Reporter.from(idx, offsets, parts)
-            val pos = part.asTerm.pos
-            val (srcF, start) = (pos.sourceFile, pos.start)
-            report.error(msg, Position(srcF, start + offset, start + offset + 1))
-          }
+        given XmlContext = new XmlContext(args, scope)
+        given Reporter = new Reporter {
+            import quotes.reflect.*
 
-          def error(msg: String, expr: Expr[Any]): Unit = {
-            report.error(msg, expr)
-          }
-        }
+            def error(msg: String, idx: Int): Unit = {
+              val (part, offset) = Reporter.from(idx, offsets, parts)
+              val pos = part.asTerm.pos
+              val (srcF, start) = (pos.sourceFile, pos.start)
+              report.error(msg, Position(srcF, start + offset, start + offset + 1))
+            }
+
+            def error(msg: String, expr: Expr[Any]): Unit =
+              report.error(msg, expr)
+           }
+
         implCore(xmlStr)
-    }
-  }
+  end impl
 
-  def implErrors(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[Scope ?=> Any]], scope: Expr[Scope])(using qctx: Quotes): Expr[List[(Int, String)]] = {
-    ((strCtxExpr, argsExpr): @unchecked) match {
+  def implErrors(strCtxExpr: Expr[StringContext], argsExpr: Expr[Seq[Scope ?=> Any]], scope: Expr[Scope])
+                (using Quotes): Expr[List[(Int, String)]] =
+    (strCtxExpr, argsExpr) match
       case ('{ StringContext(${Varargs(parts)}: _*) }, Varargs(args)) =>
         val errors = List.newBuilder[Expr[(Int, String)]]
         val (xmlStr, offsets) = encode(parts)
-        implicit val ctx: XmlContext = new XmlContext(args, scope)
-        implicit val reporter: Reporter = new Reporter {
+        given XmlContext = new XmlContext(args, scope)
+        given Reporter = new Reporter {
           import quotes.reflect._
 
           def error(msg: String, idx: Int): Unit = {
@@ -53,48 +58,43 @@ object Macro {
         }
         implCore(xmlStr)
         Expr.ofList(errors.result())
-    }
-  }
+  end implErrors
 
-  private def implCore(xmlStr: String)(using XmlContext, Reporter, Quotes): Expr[scala.xml.Node | scala.xml.NodeBuffer] = {
+  private def implCore(xmlStr: String)(using XmlContext, Reporter, Quotes): Expr[scala.xml.Node | scala.xml.NodeBuffer] =
 
-    import Parse.{apply => parse}
-    import Transform.{apply => transform}
-    import Validate.{apply => validate}
-    import TypeCheck.{apply => typecheck}
-    import Expand.{apply => expand}
+    import Parse.apply as parse
+    import Transform.apply as transform
+    import Validate.apply as validate
+    import TypeCheck.apply as typecheck
+    import Expand.apply as expand
 
-    val interpolate = (
-      parse
-        andThen transform
-        andThen validate
-        andThen typecheck
-        andThen expand
-    )
+    val interpolate = 
+      parse andThen 
+      transform andThen 
+      validate andThen 
+      typecheck andThen
+      expand
 
     interpolate(xmlStr)
-  }
+  end implCore
 
-  private def encode(parts: Seq[Expr[String]])(using Quotes): (String, Array[Int]) = {
+  private def encode(parts: Seq[Expr[String]])(using Quotes): (String, Array[Int]) =
     val sb = new StringBuilder()
     val bf = ArrayBuffer.empty[Int]
 
-    def appendPart(part: Expr[String]) = {
+    def appendPart(part: Expr[String]) =
       bf += sb.length
       sb ++= part.valueOrAbort
       bf += sb.length
-    }
 
-    def appendHole(index: Int) = {
-      sb ++= Hole.encode(index)
-    }
+    def appendHole(index: Int) = sb ++= Hole.encode(index)
 
-    for ((part, index) <- parts.init.zipWithIndex) {
+    for (part, index) <- parts.init.zipWithIndex do
       appendPart(part)
       appendHole(index)
-    }
     appendPart(parts.last)
 
     (sb.toString, bf.toArray)
-  }
-}
+  end encode
+
+end Macro

@@ -1,45 +1,41 @@
 package dotty.xml.interpolator
 package internal
 
-import scala.quoted._
+import scala.quoted.*
 
-import dotty.xml.interpolator.internal.Tree._
+import Tree.*
 
-object TypeCheck {
-  def apply(nodes: Seq[Node])(using XmlContext, Reporter, Quotes): Seq[Node] = {
+object TypeCheck:
+
+  def apply(nodes: Seq[Node])(using XmlContext, Reporter, Quotes): Seq[Node] =
     typecheck(nodes)
     nodes
-  }
 
-  private def typecheck(nodes: Seq[Node])(using XmlContext, Reporter)(using Quotes): Unit = {
-    import quotes.reflect._
-    nodes.foreach {
+  private def typecheck(nodes: Seq[Node])(using XmlContext, Reporter, Quotes): Unit =
+    import quotes.reflect.*
+    nodes.foreach:
       case elem : Elem =>
-        elem.attributes.foreach(attribute =>
-          attribute.value match {
+        elem.attributes.foreach: attribute =>
+          attribute.value match
             case Seq(Placeholder(id)) =>
-              val dummy = '{ _root_.scala.xml.TopScope }
-              val expr = summon[XmlContext].args(id)
-              val term = Expr.betaReduce('{$expr(using $dummy)}).asTerm
-              val expected = attribute.isNamespace match {
+              val expr = ctx.args(id)
+              val term = Expr.betaReduce('{$expr(using scala.xml.TopScope)}).asTerm
+              val expected = attribute.isNamespace match
                 case true => Seq(TypeRepr.of[String])
                 case _ => Seq(
                   TypeRepr.of[String],
                   TypeRepr.of[collection.Seq[scala.xml.Node]],
                   TypeRepr.of[Option[collection.Seq[scala.xml.Node]]]
                 )
-              }
-              if (!expected.exists(term.tpe <:< _)) {
-                summon[Reporter].error(
+              if !expected.exists(term.tpe <:< _) then
+                reporter.error(
                   s"""type mismatch;
                     | found   : ${term.tpe.widen.show}
                     | required: ${expected.map(_.show).mkString(" | ")}
                   """.stripMargin, term.asExpr)
-              }
             case _ =>
-        })
         typecheck(elem.children)
       case _ =>
-    }
-  }
-}
+  end typecheck
+
+end TypeCheck
