@@ -12,7 +12,7 @@ lazy val root = project
     ),
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" % "scala-parser-combinators_2.13" % "1.1.2",
-      "org.scala-lang.modules" % "scala-xml_2.13" % "1.2.0",
+      "org.scala-lang.modules" % "scala-xml_2.13" % "2.2.0",
       "com.novocode" % "junit-interface" % "0.11" % "test"
     )
   )
