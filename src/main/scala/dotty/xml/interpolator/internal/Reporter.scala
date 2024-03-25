@@ -1,14 +1,13 @@
 package dotty.xml.interpolator
 package internal
 
-import scala.quoted._
+import scala.quoted.*
 
-trait Reporter {
+trait Reporter:
   def error(msg: String, idx: Int): Unit
   def error(msg: String, expr: Expr[Any]): Unit
-}
 
-object Reporter {
+object Reporter:
   def from(idx: Int, offsets: Array[Int], parts: Seq[Expr[String]]): (Expr[String], Int) = {
     val index = offsets.lastIndexWhere(idx >= _)
     val isWithinHoleOrAtTheEnd = index % 2 != 0
@@ -18,4 +17,3 @@ object Reporter {
     }
     (parts(partIndex), offset)
   }
-}

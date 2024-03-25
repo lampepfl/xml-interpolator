@@ -1,9 +1,12 @@
 package dotty.xml.interpolator
 
-import scala.quoted._
+import scala.quoted.*
 
-type Scope = scala.xml.NamespaceBinding
-implicit val top: Scope = scala.xml.TopScope
+private [interpolator] type Scope = scala.xml.NamespaceBinding
 
-extension (inline ctx: StringContext) transparent inline def xml (inline args: (Scope ?=> Any)*)(using scope: Scope): Any =
-  ${ dotty.xml.interpolator.internal.Macro.impl('ctx, 'args, 'scope) }
+given Scope = scala.xml.TopScope
+
+/** TODO: THIS NEED TO BE DOCUMENTED */
+extension (inline ctx: StringContext)
+  transparent inline def xml (inline args: (Scope ?=> Any)*)(using inline scope: Scope): Any =
+    ${ internal.Macro.impl('ctx, 'args, 'scope) }

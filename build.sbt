@@ -8,7 +8,7 @@ lazy val root = project
 
     scalaVersion := dottyVersion,
     scalacOptions ++= Seq(
-      "-deprecation"
+      "-deprecation", "-feature", "-language:implicitConversions"
     ),
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" % "scala-parser-combinators_2.13" % "1.1.2",
